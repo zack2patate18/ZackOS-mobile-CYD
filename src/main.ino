@@ -2,6 +2,7 @@
 #include <XPT2046_Touchscreen.h>
 #include <TFT_eSPI.h>
 #include <cstdint>
+#include "config.h"
 
 #define XPT2046_CS   33
 #define XPT2046_IRQ  36
