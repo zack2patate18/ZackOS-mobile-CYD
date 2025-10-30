@@ -7,10 +7,15 @@
 #include "ui.h"
 #include "apps.h"
 #include "system.h"
+#include "WiFi.h"
 
 void setup() {
   Serial.begin(115200);
   init_screen();
+
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+
   tft.fillScreen(TFT_BLACK);
 
   Serial.println("Ready!");
@@ -23,20 +28,18 @@ void setup() {
 
   // launch_app(home);
 
-  run_home();
+  launch_app(lock);
+  if (debug) {
+    Serial.println("Launching lock screen");
+  }
 
   // launch_app(settings);
 
 }
 
 void loop() {
-
   if (ts.touched()) {
     handle_touch();
-    TouchPoint p = get_pos();
-    Serial.println("-----------------");
-    Serial.println(p.x);
-    Serial.println(p.y);
     app_list[current_app].run();
   }
 
@@ -44,9 +47,9 @@ void loop() {
     app_list[current_app].drawner();
     need_to_be_redrawn = false;
   }
-  if (need_to_be_refreshed) {
-      app_list[current_app].run();
-      need_to_be_refreshed = false;
-  }
 
+  if (need_to_be_refreshed) {
+    app_list[current_app].run();
+    need_to_be_refreshed = false;
+  }
 }

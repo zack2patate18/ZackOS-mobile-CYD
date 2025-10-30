@@ -24,9 +24,30 @@ XPT2046_Touchscreen ts(XPT2046_CS, XPT2046_IRQ);
 TFT_eSPI tft = TFT_eSPI();
 
 void launch_app(App& app) {
+    if (strcmp(app.name, "L_screen") != 0) {
+        if (debug) Serial.println("Not lockscreen");
+        for (int i = 0; i < app_list_size; i++) {
+            if (strcmp(app_list[i].name, app.name) == 0) {
+                current_app = i;
+                if (debug) Serial.println("App founds");
+                break;
+            }
+        }
+    }
+
+    if (debug) {
+        Serial.print("New app : ");
+        Serial.println(app_list[current_app].name);
+    }
+
+
     app.drawner();
     app.run();
+    need_to_be_redrawn = true;
+    need_to_be_refreshed = true;
 }
+
+
 
 void init_screen() {
     mySpi.begin(XPT2046_CLK, XPT2046_MISO, XPT2046_MOSI, XPT2046_CS);
@@ -79,17 +100,9 @@ void handle_touch() {
         if (p.x >= hi_x_start && p.x <= hi_x_end &&
             p.y >= hi_y_start && p.y <= hi_y_end) {
             home_indicator_touched = true;
-            Serial.println("Home Indicator Touched!");
-            if (strcmp(app_list[current_app].name, "home") != 0) {
-                for (int i = 0; i < app_list_size; i++) {
-                    if (strcmp(app_list[i].name, "home") == 0) {
-                        current_app = i;
-                        need_to_be_redrawn = true;
-                        need_to_be_refreshed = true;
-                        break;
-                    }
-                }
-            }
+            if (debug) Serial.println("Home Indicator Touched!");
+            if (strcmp(app_list[current_app].name, "home") != 0 && strcmp(app_list[current_app].name, "lock") != 0)
+            launch_app(home);
         } else {
             home_indicator_touched = false;
         }

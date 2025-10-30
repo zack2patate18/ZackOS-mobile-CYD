@@ -13,10 +13,10 @@ const int list_margin = 10;
 const int margin = 30;
 const int app_icon_size = 60;
 
-bool debug = false;
+bool debug = true;
 bool touch = false;
 const int tft_rotation = 2;
-bool lock_screen = true;
+bool lock_screen_enabled = true;
 
 bool swapXY = false;
 bool invertX = false;
@@ -33,7 +33,12 @@ int home_indicator_width = tft.width() / 2;
 int home_indicator_height = 8;
 int home_indicator_y = tft.height() - home_indicator_height;
 bool home_indicator_touched = false;
+int home_indicator_default_y = tft.height() - home_indicator_height;
 
 bool top_bar_enabled = true;
 const int top_bar_height = 15;
 uint16_t top_bar_color = color565(100, 100, 100);
+
+bool lock_screen_swipe = false;
+
+int n_wifi = -1;

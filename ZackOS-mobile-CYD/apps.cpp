@@ -6,9 +6,8 @@
 #include <cstring>
 #include "system.h"
 #include <esp_system.h>
-
-App app_list[] = {home, settings, reboot_menu, sleep_app};
-int app_list_size = sizeof(app_list) / sizeof(app_list[0]);
+#include <future>
+#include "WiFi.h"
 
 int current_app = 0;
 
@@ -39,8 +38,10 @@ void home_handler() {
         if (p.x >= x && p.x <= x + app_icon_size &&
             p.y >= y && p.y <= y + app_icon_size) {
 
-            Serial.print("App touchée : ");
-            Serial.println(app_list[i].name);
+            if (debug) {
+                Serial.print("Selected App : ");
+                Serial.println(app_list[i].name);
+            }
 
             tft.drawRect(x, y, app_icon_size, app_icon_size, color565(255, 0, 0));
             tft.fillRect(x-1, y+1, app_icon_size - 1, app_icon_size - 1, color565(255, 255, 255));
@@ -103,7 +104,7 @@ void draw_settings() {
     draw_home_indicator();
     draw_top_bar();
 
-    Serial.println("SETTINGS draw");
+    if (debug) Serial.println("SETTINGS draw");
 }
 
 void settings_handler() {
@@ -113,10 +114,22 @@ void settings_handler() {
         need_to_be_redrawn = false;
         need_to_be_refreshed = false;
     }
-    Serial.println("SETTINGS handler");
+
+    if (debug) Serial.println("SETTINGS handler");
+    
+    TouchPoint p = get_pos();
+
+    if(p.touched) {
+        if (p.y < (tft.fontHeight(2) + 90) && p.y > 90) {
+            if (debug) Serial.println("DEV MODE CLICKED FROM SETTINGS");
+            debug = !debug;
+            draw_settings();
+            delay(250);
+        }
+    }
 
     if (home_indicator_touched) {
-        Serial.println("HI TOUCHED FROM SETTINGS");
+        if (debug) Serial.println("HI TOUCHED FROM SETTINGS");
 
         for (int i = 0; i < app_list_size; i++) {
             if (strcmp(app_list[i].name, "home") == 0) {
@@ -179,7 +192,7 @@ void reboot_menu_handler() {
             ESP.restart();
         }
     }
-    Serial.println("HEY from reboot_menu_handler");
+    if (debug) Serial.println("HEY from reboot_menu_handler");
     need_to_be_refreshed = true;
 }
 
@@ -203,52 +216,139 @@ void startup() {
 }
 
 void draw_sleep() {
-    bool temp = true;
-    while (temp) {
-        for (int r = 0; r <= 250; r += 10) {
-            if (!temp) {
-                break;
-            }
-            for (int g = 0; g <= 250; g += 10) {
-                if (!temp) {
-                    break;
-                }
-                for (int b = 0; b <= 250; b += 10) {
-                    if (!temp) {
-                        break;
-                    }
-                    tft.fillScreen(color565(r, g, b));
-                    delay(500);
-                    TouchPoint p = get_pos();
-                    if (p.touched) {
-                        for (int i = 0; i < app_list_size; i++) {
-                            if (strcmp(app_list[current_app].name, "home") == 0) {
-                                current_app = i;
-                                need_to_be_redrawn = true;
-                                need_to_be_refreshed = true;
-                                run_home();
-                                temp = false;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+    static int r=0, g=0, b=0;
+
+    r += 10; if (r > 250) { r = 0; g += 10; }
+    if (g > 250) { g = 0; b += 10; }
+    if (b > 250) { b = 0; }
+
+    tft.fillScreen(color565(r, g, b));
+
+    TouchPoint p = get_pos();
+    if (p.touched) {
+        current_app = 0;
+        need_to_be_redrawn = true;
+        need_to_be_refreshed = true;
+    }
+    delay(125);
+}
+
+
+void draw_lock_screen() {
+    tft.fillScreen(background_color);
+    // draw_top_bar();
+    tft.setTextColor(color565(0, 0, 0), background_color);
+    tft.drawCentreString(current_time, tft.width() / 2, home_indicator_y - (tft.height() - 80), 6);
+    draw_home_indicator();
+}
+
+void lock_screen_handler() {
+    TouchPoint p = get_pos();
+    if (p.touched) {
+        if (p.y > (tft.height() - 30) && !lock_screen_swipe) {
+            lock_screen_swipe = true;
+        }
+        if (lock_screen_swipe) {
+            // int x = (tft.width() - home_indicator_width) / 2;
+            // tft.fillRect(x, home_indicator_y - home_indicator_height, home_indicator_width, home_indicator_height, background_color);
+            // tft.fillCircle(x, home_indicator_y - home_indicator_height + (home_indicator_height / 2), home_indicator_height / 2, background_color);
+            // tft.fillCircle(x + home_indicator_width, home_indicator_y + (home_indicator_height / 2) - home_indicator_height, home_indicator_height / 2, background_color);
+            // tft.drawCentreString(current_time, tft.width() / 2, (tft.height() - 80) + home_indicator_y, 6);
+            home_indicator_y = p.y;
+            draw_lock_screen();
+        }
+        if (lock_screen_swipe && p.y < (tft.height() / 2)) {
+            lock_screen_swipe = false;
+            if (debug) Serial.println("Lockscreen swipe ended. Launching home");
+            delay(500);
+            home_indicator_y = home_indicator_default_y;
+            draw_home_indicator();
+            launch_app(home);
         }
     }
 }
+
+void draw_connectivity() {
+    tft.fillScreen(color565(128, 231, 252));
+    draw_top_bar();
+    draw_home_indicator();
+    tft.setTextColor(color565(255, 255, 255), color565(128, 231, 252));
+    tft.drawCentreString("Connectivity", tft.width() / 2, 50, 4);
+    tft.setTextColor(color565(255, 255, 255), color565(98, 201, 222));
+    if (n_wifi >= 0) {
+        tft.fillScreen(color565(128, 231, 252));
+        tft.setTextColor(color565(255, 255, 255), color565(128, 231, 252));
+        tft.drawCentreString("Connectivity", tft.width() / 2, 50, 4);
+        tft.setTextDatum(TL_DATUM);
+        tft.drawString("Wifi :", margin, 70, 2);
+
+        int ssid_y = 90;
+
+        for (int i = 0; i < n_wifi; i++) {
+            tft.drawString(WiFi.SSID(i).c_str(), margin + list_margin, ssid_y, 2);
+            if (debug) Serial.println(WiFi.SSID(i).c_str());
+            ssid_y += 25;
+        }
+
+        delay(4000);
+
+        n_wifi = -1;
+        draw_connectivity();
+    } else {
+        tft.setTextDatum(MC_DATUM);
+        tft.fillRect(tft.width() / 4, 80, tft.width() / 4 * 2, 50, color565(98, 201, 222));
+        tft.drawCentreString("Wifi scan", tft.width() / 2, 105, 2);
+    }
+}
+
+void connectivity_handler() {
+    TouchPoint p = get_pos();
+
+    if (!p.touched) return;
+
+    int wifiX = tft.width() / 4;
+    int wifiY = 80;
+    int wifiW = tft.width() / 2;
+    int wifiH = 50;
+
+    int bleX = tft.width() / 4;
+    int bleY = 150;
+    int bleW = tft.width() / 2;
+    int bleH = 50;
+
+    if (p.x >= wifiX && p.x <= wifiX + wifiW &&
+        p.y >= wifiY && p.y <= wifiY + wifiH) {
+        if (debug) Serial.println("Starting wifi scan");
+        tft.fillRect(wifiX, wifiY, wifiW, wifiH, color565(89, 191, 212));
+        tft.drawCentreString("Scanning...", tft.width() / 2, wifiY + wifiH/2, 2);
+        n_wifi = WiFi.scanNetworks();
+        draw_connectivity();
+    }
+}
+
 
 App settings = {
     color565(91, 91, 91), settings_handler, draw_settings, "Settings"
 };
 
 App reboot_menu = {
-    color565(91, 91, 91), reboot_menu_handler, draw_reboot_menu, "Restart"
+    color565(203, 249, 94), reboot_menu_handler, draw_reboot_menu, "Restart"
 };
 
 App sleep_app = {
-    color565(100, 0, 0), draw_sleep, draw_sleep, "Sleep"
+    color565(255, 0, 0), draw_sleep, draw_sleep, "Sleep"
 };
+
+App lock = {
+    color565(0, 0, 0), lock_screen_handler, draw_lock_screen, "Lock"
+};
+
+App connectivity = {
+    color565(128, 231, 252), connectivity_handler, draw_connectivity, "Connectivity"
+};
+
+App app_list[] = {home, settings, reboot_menu, sleep_app, lock, connectivity};
+int app_list_size = sizeof(app_list) / sizeof(app_list[0]);
 
 void draw_home() {
 
@@ -272,8 +372,14 @@ void draw_home() {
         int x = startX + col * (app_icon_size + app_margin);
         int y = y_start + row * (app_icon_size + app_margin);
 
-        tft.fillRect(x, y, app_icon_size, app_icon_size, app_list[i].color);
-        tft.drawRect(x, y, app_icon_size, app_icon_size, color565(255, 255, 255));
+        tft.fillRoundRect(x, y, app_icon_size, app_icon_size, 10, app_list[i].color);
+        if (debug) {
+            char text[100]; // assez grand pour contenir tout
+            sprintf(text, "Application : %s, index : %d, color : %d", 
+            app_list[i].name, i, app_list[i].color);
+            Serial.println(text);
+
+        }
 
         tft.setTextColor(TFT_WHITE);
         tft.setTextDatum(MC_DATUM);
@@ -284,5 +390,5 @@ void draw_home() {
 }
 
 App home = {
-    background_color, run_home, draw_home, "home"
+    background_color, home_handler, run_home, "home"
 };

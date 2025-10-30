@@ -2,6 +2,7 @@
 
 #include <TFT_eSPI.h>
 #include <cstdint>
+#include <cstring>
 
 extern uint16_t background_color;
 extern uint16_t text_color;
@@ -23,7 +24,7 @@ extern const int tft_rotation;
 extern bool swapXY;
 extern bool invertX;
 extern bool invertY;
-extern bool lock_screen;
+extern bool lock_screen_enabled;
 
 extern char device_name[];
 
@@ -35,8 +36,13 @@ extern const char os_version[4];
 extern int home_indicator_width;
 extern int home_indicator_height;
 extern int home_indicator_y;
+extern int home_indicator_default_y;
 extern bool home_indicator_touched;
 
 extern bool top_bar_enabled;
 extern const int top_bar_height;
 extern uint16_t top_bar_color;
+
+extern bool lock_screen_swipe;
+
+extern int n_wifi;
