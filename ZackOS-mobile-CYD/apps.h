@@ -9,6 +9,7 @@ struct App {
     AppFunction run;
     AppFunction drawner;
     char name[15];
+    bool on_home;
 };
 
 void home_handler();
@@ -45,3 +46,5 @@ extern App sleep_app;
 extern App lock;
 extern App connectivity;
 extern App keyboard;
+extern App themes;
+extern App z_browser;

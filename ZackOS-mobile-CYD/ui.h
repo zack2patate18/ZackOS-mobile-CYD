@@ -32,5 +32,8 @@ struct TouchPoint {
 };
 
 TouchPoint get_raw_pos();
+void remap_pos();
 
 TouchPoint get_pos();
+
+void handle_swipe(TouchPoint start, TouchPoint end);

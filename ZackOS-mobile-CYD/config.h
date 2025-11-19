@@ -3,6 +3,7 @@
 #include <TFT_eSPI.h>
 #include <cstdint>
 #include <cstring>
+#include "apps.h"
 
 extern uint16_t background_color;
 extern uint16_t text_color;
@@ -25,6 +26,7 @@ extern bool swapXY;
 extern bool invertX;
 extern bool invertY;
 extern bool lock_screen_enabled;
+extern uint16_t lock_screen_background_color;
 
 extern char device_name[];
 
@@ -46,3 +48,35 @@ extern uint16_t top_bar_color;
 extern bool lock_screen_swipe;
 
 extern int n_wifi;
+extern int max_wifis;
+
+extern const int keyWidth;
+extern const int keyHeight;
+extern const int keysPerRow;
+
+extern const int MAX_DISPLAY_WIFI;
+extern String selectedSSID;
+extern bool wifi_password_required;
+
+extern String typed_text;
+extern bool keyboard_active;
+extern uint16_t keyboard_color;
+extern App* next_app_after_keyboard;
+
+extern char get_website_url[256];
+
+extern int32_t balance;
+extern char balance_text[20];
+
+extern const int LONG_PRESS_THRESHOLD;
+
+extern bool swipe;
+extern int swipe_direction;
+
+extern int global_pos_x;
+extern int global_pos_y;
+extern bool screen_touched;
+
+extern int current_page;
+extern int total_pages;
+extern int max_apps_per_page;
