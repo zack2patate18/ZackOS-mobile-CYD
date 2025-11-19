@@ -46,16 +46,12 @@ void home_handler() {
 
   int max_apps_per_page = max_apps_per_row * max_apps_per_columns;
   
-  // Calculate start and end indices for current page
   int start_index = current_page * max_apps_per_page;
   int end_index = min((current_page + 1) * max_apps_per_page, app_list_size);
 
   TouchPoint p = get_pos();
-  if (p.x == -1 || p.y == -1) return;
 
-  // First, check if touch is for page navigation (left/right edges)
   if (total_pages > 1) {
-    // Right side - next page
     if (swipe && swipe_direction == 2) {
         previous_page();
     }
@@ -64,40 +60,43 @@ void home_handler() {
     }
   }
 
-  // Then check for app selection
-  for (int i = start_index; i < end_index; i++) {
-    if (!app_list[i].on_home) continue;
+  if (touch) {
 
-    int row = visible_index / max_apps_per_row;
-    int col = visible_index % max_apps_per_row;
-    int apps_in_row = min(max_apps_per_row, (end_index - start_index) - row * max_apps_per_row);
-
-    int total_width = apps_in_row * app_icon_size + (apps_in_row - 1) * app_margin;
-    int startX = (tft.width() - total_width) / 2;
-
-    int x = startX + col * (app_icon_size + app_margin);
-    int y = y_start + row * (app_icon_size + app_margin);
-
-    if (p.x >= x && p.x <= x + app_icon_size && p.y >= y && p.y <= y + app_icon_size) {
-      if (debug) {
-        Serial.print("Selected App : ");
-        Serial.println(app_list[i].name);
+      for (int i = start_index; i < end_index; i++) {
+        if (!app_list[i].on_home) continue;
+    
+        int row = visible_index / max_apps_per_row;
+        int col = visible_index % max_apps_per_row;
+        int apps_in_row = min(max_apps_per_row, (end_index - start_index) - row * max_apps_per_row);
+    
+        int total_width = apps_in_row * app_icon_size + (apps_in_row - 1) * app_margin;
+        int startX = (tft.width() - total_width) / 2;
+    
+        int x = startX + col * (app_icon_size + app_margin);
+        int y = y_start + row * (app_icon_size + app_margin);
+    
+        if (p.x >= x && p.x <= x + app_icon_size && p.y >= y && p.y <= y + app_icon_size) {
+          if (debug) {
+            Serial.print("Selected App : ");
+            Serial.println(app_list[i].name);
+          }
+    
+          tft.drawRect(x, y, app_icon_size, app_icon_size, color565(255, 0, 0));
+          tft.fillRect(x - 1, y + 1, app_icon_size - 1, app_icon_size - 1, color565(255, 255, 255));
+          delay(150);
+    
+          need_to_be_refreshed = true;
+          need_to_be_redrawn = true;
+    
+          app_list[i].run();
+          current_app = i;
+          return;
+        }
+    
+        visible_index++;
       }
-
-      tft.drawRect(x, y, app_icon_size, app_icon_size, color565(255, 0, 0));
-      tft.fillRect(x - 1, y + 1, app_icon_size - 1, app_icon_size - 1, color565(255, 255, 255));
-      delay(150);
-
-      need_to_be_refreshed = true;
-      need_to_be_redrawn = true;
-
-      app_list[i].run();
-      current_app = i;
-      return;
-    }
-
-    visible_index++;
   }
+
 }
 
 void draw_settings() {
@@ -314,6 +313,9 @@ void lock_screen_handler() {
             i += 5;
         }
         draw_home_indicator();
+        swipe = false;
+        touch = false;
+        
         launch_app(home);
     }
 }
@@ -597,14 +599,14 @@ void draw_themes() {
     tft.drawCentreString("Color", tft.width() / 2, margin + 25, 4);
 
     uint16_t colors[8] = {
-        color565(255, 0, 0),    // rouge
-        color565(0, 255, 0),    // vert
-        color565(0, 0, 255),    // bleu
-        color565(255, 255, 0),  // jaune
-        color565(255, 0, 255),  // magenta
-        color565(0, 255, 255),  // cyan
-        color565(255, 128, 0),  // orange
-        color565(128, 0, 255)   // violet
+        color565(255, 0, 0),
+        color565(0, 255, 0),
+        color565(0, 0, 255),
+        color565(255, 255, 0),
+        color565(255, 0, 255),
+        color565(0, 255, 255),
+        color565(255, 128, 0),
+        color565(128, 0, 255)
     };
 
     int squareSize = 40;
@@ -624,14 +626,14 @@ void draw_themes() {
 
 void themes_handler() {
     uint16_t colors[8] = {
-        color565(255, 0, 0),    // rouge
-        color565(0, 255, 0),    // vert
-        color565(0, 0, 255),    // bleu
-        color565(255, 255, 0),  // jaune
-        color565(255, 0, 255),  // magenta
-        color565(0, 255, 255),  // cyan
-        color565(255, 128, 0),  // orange
-        color565(128, 0, 255)   // violet
+        color565(255, 0, 0),
+        color565(0, 255, 0),
+        color565(0, 0, 255),
+        color565(255, 255, 0),
+        color565(255, 0, 255),
+        color565(0, 255, 255),
+        color565(255, 128, 0),
+        color565(128, 0, 255)
     };
     
     int squareSize = 40;
@@ -733,7 +735,6 @@ void parse_objects(String payload) {
         Serial.println();
     }
 
-    // interpreter here
   }
 }
 

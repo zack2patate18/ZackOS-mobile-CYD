@@ -165,10 +165,9 @@ void handle_touch() {
         Serial.println(p.y);
     }
     
-    // Check home indicator first
     int hi_x_start = (tft.width() - home_indicator_width) / 2;
     int hi_x_end   = hi_x_start + home_indicator_width;
-    int hi_y_start = home_indicator_y - home_indicator_height;  // Fixed this line!
+    int hi_y_start = home_indicator_y - home_indicator_height;
     int hi_y_end   = home_indicator_y;
     
     if (p.x >= hi_x_start && p.x <= hi_x_end &&
@@ -178,13 +177,12 @@ void handle_touch() {
         if (strcmp(app_list[current_app].name, "home") != 0 && 
             strcmp(app_list[current_app].name, "lock") != 0) {
             launch_app(home);
-            return;  // Important: return after launching home
+            return;
         }
     } else {
         home_indicator_touched = false;
     }
     
-    // If not home indicator, handle app-specific touch
     if (strcmp(app_list[current_app].name, "home") == 0) {
         home_handler();
     }
