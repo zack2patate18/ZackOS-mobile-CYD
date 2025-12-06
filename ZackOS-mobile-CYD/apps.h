@@ -36,6 +36,16 @@ void draw_keyboard();
 
 void keyboard_handler();
 
+void setup_torch();
+
+void torch_on();
+
+void torch_off();
+
+void torch_handler();
+
+void draw_torch();
+
 extern App settings;
 extern App home;
 extern int current_app;
@@ -48,3 +58,4 @@ extern App connectivity;
 extern App keyboard;
 extern App themes;
 extern App z_browser;
+extern App torch;

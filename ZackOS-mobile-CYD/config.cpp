@@ -78,3 +78,8 @@ bool screen_touched = false;
 int current_page = 0;
 int max_apps_per_page = max_apps_per_rows * max_apps_per_columns;
 int total_pages = (app_list_size + max_apps_per_page - 1) / max_apps_per_page;
+
+bool torch_enabled;
+int led_pin_r = 4;
+int led_pin_g = 16;
+int led_pin_b = 17;

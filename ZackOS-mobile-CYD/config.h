@@ -80,3 +80,8 @@ extern bool screen_touched;
 extern int current_page;
 extern int total_pages;
 extern int max_apps_per_page;
+
+extern bool torch_enabled;
+extern int led_pin_r;
+extern int led_pin_g;
+extern int led_pin_b;

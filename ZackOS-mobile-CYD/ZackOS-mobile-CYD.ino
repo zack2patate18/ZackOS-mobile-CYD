@@ -3,12 +3,15 @@
 #include <TFT_eSPI.h>
 #include <cstdint>
 #include <cstring>
-#include "config.h"
+#include <SD.h>
+
 #include "ui.h"
 #include "apps.h"
 #include "system.h"
 #include "WiFi.h"
 #include "utils.h"
+
+#define SD_CS 5
 
 void setup() {
   Serial.begin(115200);
@@ -30,10 +33,12 @@ void setup() {
 
   // launch_app(home);
 
+
   launch_app(lock);
   if (debug) {
     Serial.println("Launching lock screen");
   }
+
 
   // launch_app(settings);
 
@@ -48,6 +53,7 @@ TouchPoint end_p = {-1, -1, false};
 void loop() {
   touch = false;
   if (keyboard_active) {
+    draw_keyboard();
     keyboard_handler();
   }
 
@@ -88,9 +94,7 @@ void loop() {
         
         handle_touch();
         
-        if (!home_indicator_touched && !swipe && touch) {
-          app_list[current_app].run();
-        }
+        app_list[current_app].run();
       }
 
       isTouched = false;
@@ -100,6 +104,7 @@ void loop() {
   if (need_to_be_redrawn) {
     app_list[current_app].drawner();
     need_to_be_redrawn = false;
+    
   }
 
   if (need_to_be_refreshed) {

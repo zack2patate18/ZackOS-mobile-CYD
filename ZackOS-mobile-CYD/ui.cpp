@@ -40,11 +40,11 @@ void launch_app(App& app) {
         Serial.println(app_list[current_app].name);
     }
 
-
-    app.drawner();
-    app.run();
+    // app.drawner();
+    // app.run();
     need_to_be_redrawn = true;
     need_to_be_refreshed = true;
+    touch = false;
 }
 
 
@@ -69,11 +69,11 @@ void draw_top_bar() {
     tft.setTextColor(color565(0, 0, 0), top_bar_color);
     tft.setTextDatum(MC_DATUM);
     tft.drawString(current_time, tft.width() / 2, top_bar_height / 2, 1);
+    if (torch_enabled) tft.drawString("Torch", tft.width() / 6, top_bar_height / 2, 1);
 }
 
 void run_home() {
     draw_home();
-    home_handler();
     draw_home_indicator();
     draw_top_bar();
 }

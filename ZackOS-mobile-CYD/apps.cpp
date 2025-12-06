@@ -81,16 +81,11 @@ void home_handler() {
             Serial.println(app_list[i].name);
           }
     
-          tft.drawRect(x, y, app_icon_size, app_icon_size, color565(255, 0, 0));
-          tft.fillRect(x - 1, y + 1, app_icon_size - 1, app_icon_size - 1, color565(255, 255, 255));
-          delay(150);
+        tft.fillRoundRect(x, y, app_icon_size, app_icon_size, 10, changeBrightness(app_list[i].color, 0.5));
+        delay(150);
     
-          need_to_be_refreshed = true;
-          need_to_be_redrawn = true;
-    
-          app_list[i].run();
-          current_app = i;
-          return;
+        launch_app(app_list[i]);
+        return;
         }
     
         visible_index++;
@@ -413,7 +408,6 @@ void connectivity_handler() {
     }
 
     TouchPoint p = get_pos();
-    if (!touch) return;
 
     if (debug) {
         Serial.println("HEY from connectivity handler");
@@ -553,6 +547,8 @@ void keyboard_handler() {
 
     if(!touch) return;
 
+    if (debug) Serial.println("Touched on keyboard (Hello from keyboard handler btw)");
+
     for(int row=0; row<rows; row++){
         int start_x = 2;
         for(int col=0; col<cols; col++){
@@ -680,7 +676,7 @@ void draw_z_browser() {
 }
 
 void z_browser_handler() {
-TouchPoint p = get_pos();
+    TouchPoint p = get_pos();
   if (typed_text != "" && !keyboard_active && wait_for_keyboard_to_stop) {
     if (debug) {
         Serial.println("Sending request");
@@ -691,7 +687,7 @@ TouchPoint p = get_pos();
     }
     typed_text = "";
   } else if (touch) {
-    if (p.y > top_bar_height && p.y > (top_bar_height + 15)) {
+    if (p.y > top_bar_height && p.y < (top_bar_height + 15)) {
         
         if (debug) Serial.println("Url touched");
         
@@ -770,6 +766,52 @@ void zackpay_handler() {
     }
 }
 
+void torch_on() {
+    if (debug) Serial.println("Set torch state to 1");
+    torch_enabled = true;
+    digitalWrite(led_pin_r, LOW);
+    digitalWrite(led_pin_g, LOW);
+    digitalWrite(led_pin_b, LOW);
+    if (debug) Serial.println("Torch tuned on");
+}
+
+void torch_off() {
+    torch_enabled = false;
+    if (debug) Serial.println("Set torch state to 0");
+    digitalWrite(led_pin_r, HIGH);
+    digitalWrite(led_pin_g, HIGH);
+    digitalWrite(led_pin_b, HIGH);
+    if (debug) Serial.println("Torch tuned off");
+}
+
+void setup_torch() {
+    torch_enabled = false;
+    if (debug) Serial.println("Set torch state to 0 (from setup torch)");
+    pinMode(led_pin_r, OUTPUT);
+    pinMode(led_pin_g, OUTPUT);
+    pinMode(led_pin_b, OUTPUT);
+    torch_off();
+    if (debug) Serial.println("Setup torch");
+}
+
+void torch_handler() {
+    if (torch_enabled) {
+        torch_off();
+    } else {
+        torch_on();
+    }
+    if (debug) {
+        Serial.println("Launching home from torch");
+        Serial.print("Current touch state : ");
+        Serial.println(torch_enabled);
+    }
+    touch = false;
+    launch_app(home);
+}
+
+void draw_torch() {
+}
+
 App settings = {
     color565(91, 91, 91), settings_handler, draw_settings, "Settings", true
 };
@@ -806,7 +848,11 @@ App zackpay = {
     color565(125, 129, 203), zackpay_handler, draw_zackpay, "ZackPay", true
 };
 
-App app_list[] = {home, settings, reboot_menu, sleep_app, lock, connectivity, themes, zackpay, z_browser};
+App torch = {
+    color565(0, 0, 0), torch_handler, draw_torch, "Torch", true
+};
+
+App app_list[] = {home, settings, reboot_menu, sleep_app, lock, connectivity, themes, zackpay, z_browser, torch};
 int app_list_size = sizeof(app_list) / sizeof(app_list[0]);
 
 
