@@ -13,7 +13,7 @@ const int list_margin = 10;
 const int margin = 30;
 const int app_icon_size = 60;
 
-bool debug = true;
+bool debug = false;
 bool touch = false;
 const int tft_rotation = 2;
 bool lock_screetruebled = true;
@@ -28,7 +28,7 @@ char device_name[] = "CYD-ZackPhone";
 const char cpu_name[] = "esp32";
 const char cpu_speed[4] = "244";
 
-const char os_version[4] = "0.3";
+const char os_version[4] = "0.7";
 
 int home_indicator_width = tft.width() / 2;
 int home_indicator_height = 8;

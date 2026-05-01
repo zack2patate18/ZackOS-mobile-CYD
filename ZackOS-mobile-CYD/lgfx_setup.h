@@ -44,7 +44,7 @@ public:
             cfg.dummy_read_pixel = 8;
             cfg.dummy_read_bits  = 1;
             cfg.readable         = true;
-            cfg.invert           = true
+            cfg.invert           = true;
             cfg.rgb_order        = false;
             cfg.dlen_16bit       = false;
             cfg.bus_shared       = false;
