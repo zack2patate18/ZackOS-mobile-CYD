@@ -1,16 +1,13 @@
 #include "ui.h"
 
-// ── Instance LGFX ──────────────────────────────────────────────────────────
 LGFX tft;
 
-// ── Initialisation ─────────────────────────────────────────────────────────
 void init_screen() {
     tft.init();
     tft.setRotation(2);
     tft.setBrightness(255);
 }
 
-// ── Lancement d'une app ────────────────────────────────────────────────────
 void launch_app(App& app) {
     if (strcmp(app.name, "L_screen") != 0) {
         if (debug) Serial.println("Not lockscreen");
@@ -33,7 +30,6 @@ void launch_app(App& app) {
     touch = false;
 }
 
-// ── Home indicator ─────────────────────────────────────────────────────────
 void draw_home_indicator() {
     int x = (tft.width() - home_indicator_width) / 2;
     tft.fillRect(x, home_indicator_y - home_indicator_height,
@@ -49,7 +45,6 @@ void draw_home_indicator() {
                    color565(255, 255, 255));
 }
 
-// ── Top bar ────────────────────────────────────────────────────────────────
 void draw_top_bar() {
     tft.fillRect(0, 0, tft.width(), top_bar_height, top_bar_color);
     tft.setTextColor(color565(0, 0, 0), top_bar_color);
@@ -59,23 +54,19 @@ void draw_top_bar() {
         tft.drawString("Torch", tft.width() / 6, top_bar_height / 2, 1);
 }
 
-// ── Home ───────────────────────────────────────────────────────────────────
 void run_home() {
     draw_home();
     draw_home_indicator();
     draw_top_bar();
 }
 
-// ── Touch : lecture brute via LGFX ─────────────────────────────────────────
 TouchPoint get_raw_pos() {
     uint16_t tx = 0, ty = 0;
     
     if (tft.getTouch(&tx, &ty)) {
-        // Rejette les coordonnées hors écran
         if (tx >= tft.width() || ty >= tft.height()) {
             return { 0, 0, false };
         }
-        // Rejette les coordonnées sur les bords exacts (souvent parasites)
         if (tx == 0 || ty == 0 || tx == tft.width()-1 || ty == tft.height()-1) {
             return { 0, 0, false };
         }
@@ -83,12 +74,8 @@ TouchPoint get_raw_pos() {
     }
     return { 0, 0, false };
 }
-// ── Remapping + options swapXY / invertX / invertY ─────────────────────────
-//  LGFX applique déjà la calibration (x_min/x_max → coords écran).
-//  On conserve quand même les options de config pour compatibilité.
 static unsigned long last_touch = 0;
 
-// ui.cpp - remplace get_raw_pos() et remap_pos()
 
 void remap_pos(uint16_t tx, uint16_t ty) {
     int x = (int)tx;
@@ -105,7 +92,6 @@ TouchPoint get_pos() {
     return { global_pos_x, global_pos_y, screen_touched };
 }
 
-// ── Gestion du touch ───────────────────────────────────────────────────────
 void handle_touch() {
     TouchPoint p = get_pos();
 
@@ -139,7 +125,6 @@ void handle_touch() {
     }
 }
 
-// ── Détection de swipe ─────────────────────────────────────────────────────
 void handle_swipe(TouchPoint start, TouchPoint end) {
     int dx = end.x - start.x;
     int dy = end.y - start.y;

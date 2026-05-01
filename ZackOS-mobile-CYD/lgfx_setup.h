@@ -12,7 +12,6 @@ class LGFX : public lgfx::LGFX_Device {
 public:
     LGFX(void) {
 
-        // ── Bus SPI (affichage) ─────────────────────────────────────────────
         {
             auto cfg = _bus_instance.config();
             cfg.spi_host    = HSPI_HOST;
@@ -30,7 +29,6 @@ public:
             _panel_instance.setBus(&_bus_instance);
         }
 
-        // ── Panneau ST7796 ─────────────────────────────────────────────────
         {
             auto cfg = _panel_instance.config();
             cfg.pin_cs           = 15;
@@ -46,22 +44,21 @@ public:
             cfg.dummy_read_pixel = 8;
             cfg.dummy_read_bits  = 1;
             cfg.readable         = true;
-            cfg.invert           = true;   // ST7796 nécessite inversion
+            cfg.invert           = true
             cfg.rgb_order        = false;
             cfg.dlen_16bit       = false;
             cfg.bus_shared       = false;
             _panel_instance.config(cfg);
         }
 
-        // ── Touch GT911 (I2C) ──────────────────────────────────────────────
         {
             auto cfg = _touch_instance.config();
             cfg.i2c_port    = 0;
-            cfg.i2c_addr    = 0x38;   // GT911 : 0x5D ou 0x14
-            cfg.pin_sda     = 18;     // CTP_SDA
-            cfg.pin_scl     = 19;     // CTP_SCL
-            cfg.pin_int     = 23;     // CTP_INT
-            cfg.pin_rst     = 22;     // CTP_RST
+            cfg.i2c_addr    = 0x38;
+            cfg.pin_sda     = 18;
+            cfg.pin_scl     = 19;
+            cfg.pin_int     = 23;
+            cfg.pin_rst     = 22;
             cfg.freq        = 400000;
             cfg.x_min       = 0;
             cfg.x_max       = 319;
@@ -73,10 +70,9 @@ public:
             _panel_instance.setTouch(&_touch_instance);
         }
 
-        // ── Rétroéclairage PWM ─────────────────────────────────────────────
         {
             auto cfg = _light_instance.config();
-            cfg.pin_bl      = 21;    // LED
+            cfg.pin_bl      = 21;
             cfg.invert      = false;
             cfg.freq        = 44100;
             cfg.pwm_channel = 7;
