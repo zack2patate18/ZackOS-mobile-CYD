@@ -1,18 +1,7 @@
 #include "apps.h"
-#include "config.h"
-#include "ui.h"
-#include "utils.h"
-#include "system.h"
-#include <cstdlib>
-#include <cstring>
-#include "system.h"
-#include <esp_system.h>
-#include <future>
-#include "WiFi.h"
-#include <ESP32Ping.h>
-#include <ArduinoJson.h>
-#include <HTTPClient.h>
-#include <stdlib.h>
+
+using namespace fs;
+
 
 int current_app = 0;
 
@@ -315,177 +304,6 @@ void lock_screen_handler() {
     }
 }
 
-bool wait_for_keyboard_to_stop = false;
-
-void draw_connectivity() {
-    tft.fillScreen(color565(128, 231, 252));
-    draw_top_bar();
-    draw_home_indicator();
-    tft.setTextColor(color565(255, 255, 255), color565(128, 231, 252));
-    tft.drawCentreString("Connectivity", tft.width() / 2, 50, 4);
-    tft.setTextColor(color565(255, 255, 255), color565(98, 201, 222));
-    if (n_wifi >= 0) {
-        tft.fillScreen(color565(128, 231, 252));
-        tft.setTextColor(color565(255, 255, 255), color565(128, 231, 252));
-        tft.drawCentreString("Connectivity", tft.width() / 2, 50, 4);
-        tft.setTextDatum(TL_DATUM);
-        tft.drawString("Wifi :", margin, 70, 2);
-
-        int ssid_y = 90;
-
-        for (int i = 0; i < n_wifi; i++) {
-            tft.drawString(WiFi.SSID(i).c_str(), margin + list_margin, ssid_y, 2);
-            if (debug) Serial.println(WiFi.SSID(i).c_str());
-            ssid_y += 25;
-        }
-
-    } else {
-        tft.setTextDatum(MC_DATUM);
-        tft.fillRect(tft.width() / 4, 80, tft.width() / 4 * 2, 50, color565(98, 201, 222));
-        tft.drawCentreString("Wifi scan", tft.width() / 2, 105, 2);
-    }
-}
-
-void connectivity_handler() {
-
-    char password[256];
-
-    if (!keyboard_active && wait_for_keyboard_to_stop) {
-        typed_text.toCharArray(password, sizeof(password));
-        if (debug) {
-            Serial.print(selectedSSID.c_str());
-            Serial.println("YOOOOOO wifi password entered ! now we need to test it");
-        }
-        WiFi.begin(selectedSSID.c_str(), password );
-        bool connected = false;
-        for (int i = 0; !connected; i++) {
-            if (i % 2 == 0) {
-                tft.fillScreen(color565(100, 0, 0));
-            } else {
-                tft.fillScreen(color565(0, 0, 0));
-            }
-
-            tft.setTextDatum(MC_DATUM);
-            tft.drawString("Connecting...", tft.width() / 2, tft.height() / 2, 4);
-
-            if (WiFi.status() == WL_CONNECTED) {
-                top_bar_color = color565(255, 255, 0);
-                connected = true;
-
-                if (debug) Serial.println("Connected");
-
-                tft.fillScreen(color565(255, 255, 0));
-                tft.drawString("Connected!", tft.width()/2, tft.height()/2, 4);
-                tft.drawString("Local IP : " + WiFi.localIP().toString(), tft.width()/2, tft.height()/2 + 20, 2);
-
-                IPAddress remoteIP(8, 8, 8, 8);
-                if (Ping.ping(remoteIP)) {
-                    tft.drawString("Can access internet!", tft.width()/2, tft.height()/2 + 40, 2);
-                    if (debug) Serial.println("Can acces to internet");
-                } else {
-                    tft.drawString("Cannot access internet :(", tft.width()/2, tft.height()/2 + 40, 2);
-                    if (debug) Serial.println("Cannot acces to internet");
-                }
-
-                delay(1000);
-
-                break;
-            }
-
-            n_wifi = 0;
-
-            delay(1000);
-        }
-
-        if (!connected) {
-            tft.fillScreen(color565(100, 0, 0));
-            tft.setTextDatum(MC_DATUM);
-            tft.drawCentreString("Error while connecting : Timed out", tft.width() / 2, tft.height() / 2, 2);
-            delay(1000);
-        }
-        launch_app(home);
-        return;
-    }
-
-    TouchPoint p = get_pos();
-
-    if (debug) {
-        Serial.println("HEY from connectivity handler");
-    }
-
-    if (typed_text == "") {
-
-    int wifiX = tft.width() / 4;
-    int wifiY = 80;
-    int wifiW = tft.width() / 2;
-    int wifiH = 50;
-
-    if (p.x >= wifiX && p.x <= wifiX + wifiW &&
-        p.y >= wifiY && p.y <= wifiY + wifiH && n_wifi < 0) {
-            if (debug) Serial.println("Starting wifi scan");
-            tft.fillRect(wifiX, wifiY, wifiW, wifiH, color565(89, 191, 212));
-        tft.drawCentreString("Scanning...", tft.width() / 2, wifiY + wifiH / 2, 2);
-        n_wifi = WiFi.scanNetworks();
-        draw_connectivity();
-        return;
-    }
-
-    int ssid_y = 90;
-    int n_display = min(n_wifi, MAX_DISPLAY_WIFI);
-
-    for (int i = 0; i < n_display; i++) {
-        int ssidX_start = margin + list_margin;
-        int ssidX_end   = tft.width() - margin;
-        int ssidY_start = ssid_y;
-        int ssidY_end   = ssid_y + 20;
-
-        if (p.x >= ssidX_start && p.x <= ssidX_end &&
-            p.y >= ssidY_start && p.y <= ssidY_end) {
-
-            selectedSSID = WiFi.SSID(i);
-            wifi_password_required = (WiFi.encryptionType(i) != WIFI_AUTH_OPEN);
-
-            if (wifi_password_required) {
-                if (debug) Serial.println("Password required for: " + selectedSSID);
-                delay(100);
-                launch_app(keyboard);
-                wait_for_keyboard_to_stop = true;
-                keyboard_active = true;
-                next_app_after_keyboard = &connectivity;
-            } else {
-                if (debug) Serial.println("Connecting to open network: " + selectedSSID);
-                WiFi.begin(selectedSSID.c_str());
-                bool connected = false;
-                for (int i = 0; i < 30; i++) {
-                    if (i % 2 == 0) {
-                        tft.fillScreen(color565(100, 0, 0));
-                    } else {
-                        tft.fillScreen(color565(0, 0, 0));
-                    }
-                    tft.setTextDatum(MC_DATUM);
-                    tft.drawCentreString("Connecting...", tft.width() / 2, tft.height() / 2, 4);
-                    if (WiFi.status() == WL_CONNECTED) {
-                        top_bar_color = color565(255, 255, 0);
-                        connected = true;
-                        break;
-                    }
-                    delay(1000);
-                }
-                if (!connected) {
-                    tft.fillScreen(color565(100, 0, 0));
-                    tft.setTextDatum(MC_DATUM);
-                    tft.drawCentreString("Error while connecting : Timed out", tft.width() / 2, tft.height() / 2, 2);
-                }
-                launch_app(home);
-                return;
-            }
-            break;
-        }
-        ssid_y += 25;
-    }
-}
-}
-
 void draw_keyboard() {
     const int rows = 4;
     const int cols = 10;
@@ -665,75 +483,6 @@ void themes_handler() {
     }
 }
 
-void parse_objects(String playload);
-
-void draw_z_browser() {
-    tft.fillScreen(color565(239, 23, 172));
-    draw_top_bar();
-    draw_home_indicator();
-    tft.fillRect(0, top_bar_height, tft.width(), 30, color565(80, 80, 80));
-    tft.drawCentreString("Enter your url here", tft.width() / 2, top_bar_height + 15, 2);
-}
-
-void z_browser_handler() {
-    TouchPoint p = get_pos();
-  if (typed_text != "" && !keyboard_active && wait_for_keyboard_to_stop) {
-    if (debug) {
-        Serial.println("Sending request");
-    }
-    String resp = request_website(typed_text);
-    if (resp != "err") {
-      parse_objects(resp);
-    }
-    typed_text = "";
-  } else if (touch) {
-    if (p.y > top_bar_height && p.y < (top_bar_height + 15)) {
-        
-        if (debug) Serial.println("Url touched");
-        
-        if (!keyboard_active) {
-            launch_app(keyboard);
-            wait_for_keyboard_to_stop = true;
-            keyboard_active = true;
-            next_app_after_keyboard = &z_browser;
-        }
-    }
-  }
-}
-
-void parse_objects(String payload) {
-  StaticJsonDocument<512> doc;
-  DeserializationError error = deserializeJson(doc, payload);
-
-  if (error) {
-    Serial.println("Erreur parsing JSON !");
-    return;
-  }
-
-  String status = doc["status"];
-  if (debug) Serial.println("Status: " + status);
-
-  JsonObject objects = doc["objects"];
-  for (JsonPair obj : objects) {
-    const char* id = obj.key().c_str();
-    const char* type = obj.value()["type"];
-    JsonArray attrs = obj.value()["attr"];
-
-    if (debug) {
-        Serial.print("Object "); Serial.println(id);
-        Serial.print(" Type: "); Serial.println(type);
-        Serial.print(" Attrs: ");
-        
-        for (const char* attr : attrs) {
-            Serial.print(attr);
-            Serial.print(" ");
-        }
-        Serial.println();
-    }
-
-  }
-}
-
 void draw_zackpay() {
     tft.fillScreen(color565(125, 129, 203));
     tft.setTextDatum(MC_DATUM);
@@ -828,16 +577,8 @@ App lock = {
     color565(0, 0, 0), lock_screen_handler, draw_lock_screen, "Lock", true
 };
 
-App connectivity = {
-    color565(128, 231, 252), connectivity_handler, draw_connectivity, "Connectivity", true
-};
-
 App themes = {
     color565(126, 252, 42), themes_handler, draw_themes, "Themes", true
-};
-
-App z_browser = {
-    color565(255, 255, 255), z_browser_handler, draw_z_browser, "Z-Browser", true
 };
 
 App keyboard = {
@@ -852,9 +593,8 @@ App torch = {
     color565(0, 0, 0), torch_handler, draw_torch, "Torch", true
 };
 
-App app_list[] = {home, settings, reboot_menu, sleep_app, lock, connectivity, themes, zackpay, z_browser, torch};
+App app_list[] = {home, settings, reboot_menu, sleep_app, lock, themes, zackpay, torch};
 int app_list_size = sizeof(app_list) / sizeof(app_list[0]);
-
 
 void draw_home() {
   tft.fillScreen(background_color);
@@ -895,6 +635,58 @@ void draw_home() {
     tft.setTextColor(TFT_WHITE);
     tft.setTextDatum(MC_DATUM);
     tft.drawString(app_list[i].name, x + app_icon_size / 2, y + app_icon_size + 10, 1);
+
+    visible_index++;
+  }
+
+  std::vector<String> paths;
+  File root_app = SD.open("/apps");
+  if (root_app) {
+    list_files_non_recursive(root_app, "", paths);
+    root_app.close();
+  } else {
+    if (debug) Serial.println("SD: /apps folder not found or SD not ready");
+  }
+
+
+  start_index = end_index;
+
+  end_index = min((current_page + 1) * max_apps_per_page, (int)paths.size());
+
+  for (int i = visible_index; i < end_index; i++) {
+    // if (!app_list[i].on_home) continue;
+
+    
+    int row = visible_index / max_apps_per_row;
+    int col = visible_index % max_apps_per_row;
+    
+    int apps_in_row = min(max_apps_per_row, (end_index - start_index) - row * max_apps_per_row);
+    int total_width = apps_in_row * app_icon_size + (apps_in_row - 1) * app_margin;
+    int startX = (tft.width() - total_width) / 2;
+    
+    int x = startX + col * (app_icon_size + app_margin);
+    int y = y_start + row * (app_icon_size + app_margin);
+    
+    uint16_t logo_w;
+    uint16_t logo_h;
+
+    /* if (SD.exists(paths[i] + "/assets/logo.bmp")) {
+        read_bmp_dimensions(paths[i].c_str(), logo_w, logo_h);
+        if (logo_w == app_icon_size && logo_h == app_icon_size) {
+            if (!tft.drawBitmap(paths[i] + "/assets/logo.png"), x, y) {
+                tft.fillRoundRect(x, y, app_icon_size, app_icon_size, 10, color565(0, 0, 0));
+            }
+        }
+    } */
+    
+    
+    if (debug) {
+      Serial.println("Showing zlua app");
+    }
+
+    tft.setTextColor(TFT_WHITE);
+    tft.setTextDatum(MC_DATUM);
+    tft.drawString(paths[i], x + app_icon_size / 2, y + app_icon_size + 10, 1);
 
     visible_index++;
   }

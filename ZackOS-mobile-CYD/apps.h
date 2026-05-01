@@ -1,6 +1,5 @@
 #pragma once
-#include "ui.h"
-#include <cstdint>
+#include "config.h"
 
 typedef void (*AppFunction)();
 
@@ -54,8 +53,6 @@ extern int app_list_size;
 extern App reboot_menu;
 extern App sleep_app;
 extern App lock;
-extern App connectivity;
 extern App keyboard;
 extern App themes;
-extern App z_browser;
 extern App torch;

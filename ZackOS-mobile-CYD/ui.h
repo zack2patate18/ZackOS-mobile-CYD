@@ -1,39 +1,31 @@
 #pragma once
 
-#include <TFT_eSPI.h>
-#include <XPT2046_Touchscreen.h>
-#include <SPI.h>
-#include "apps.h"
+#include "config.h"
 
-extern SPIClass mySpi;
-extern XPT2046_Touchscreen ts;
-extern TFT_eSPI tft;
+// ── Instances globales (définies dans ui.cpp) ──────────────────────────────
+extern LGFX tft;
 
 struct App;
 
+// ── Ecran ──────────────────────────────────────────────────────────────────
 void init_screen();
-
 void run_home();
-
-void handle_touch();
-
-void launch_app(App& app);
-
 void draw_top_bar();
-
 void draw_home_indicator();
-
 void draw_home();
 
+// ── Touch ──────────────────────────────────────────────────────────────────
 struct TouchPoint {
-    int x;
-    int y;
+    int  x;
+    int  y;
     bool touched;
 };
 
 TouchPoint get_raw_pos();
-void remap_pos();
-
+void       remap_pos();
 TouchPoint get_pos();
 
+// ── Navigation ─────────────────────────────────────────────────────────────
+void launch_app(App& app);
+void handle_touch();
 void handle_swipe(TouchPoint start, TouchPoint end);

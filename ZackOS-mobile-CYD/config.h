@@ -1,9 +1,27 @@
 #pragma once
 
-#include <TFT_eSPI.h>
 #include <cstdint>
 #include <cstring>
+#include <SPI.h>
+#include <cstdlib>
+#include <stdlib.h>
+#include <SD.h>
+#include <FS.h>
+#include <vector>
+#include <esp_system.h>
+#include <future>
+// #include <ESP32Ping.h>
+// #include <ArduinoJson.h>
+// #include <HTTPClient.h>
+#include <Arduino.h>
+// #include "WiFi.h"
+
+#include "lgfx_setup.h"
+#include "ui.h"
 #include "apps.h"
+#include "system.h"
+#include "utils.h"
+
 
 extern uint16_t background_color;
 extern uint16_t text_color;
@@ -17,9 +35,7 @@ extern const int margin;
 extern const int app_icon_size;
 
 extern bool debug;
-
 extern bool touch;
-
 extern const int tft_rotation;
 
 extern bool swapXY;
@@ -29,10 +45,8 @@ extern bool lock_screen_enabled;
 extern uint16_t lock_screen_background_color;
 
 extern char device_name[];
-
 extern const char cpu_speed[4];
 extern const char cpu_name[];
-
 extern const char os_version[4];
 
 extern int home_indicator_width;
@@ -47,16 +61,9 @@ extern uint16_t top_bar_color;
 
 extern bool lock_screen_swipe;
 
-extern int n_wifi;
-extern int max_wifis;
-
 extern const int keyWidth;
 extern const int keyHeight;
 extern const int keysPerRow;
-
-extern const int MAX_DISPLAY_WIFI;
-extern String selectedSSID;
-extern bool wifi_password_required;
 
 extern String typed_text;
 extern bool keyboard_active;
@@ -65,8 +72,7 @@ extern App* next_app_after_keyboard;
 
 extern char get_website_url[256];
 
-extern int32_t balance;
-extern char balance_text[20];
+extern long int balance;
 
 extern const int LONG_PRESS_THRESHOLD;
 

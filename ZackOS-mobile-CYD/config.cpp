@@ -1,10 +1,6 @@
 #include "config.h"
-#include "utils.h"
-#include "ui.h"
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-#include <stdlib.h>
+
+using namespace fs;
 
 uint16_t background_color = color565(10, 10, 255);
 uint16_t text_color = color565(255, 255, 255);
@@ -20,12 +16,12 @@ const int app_icon_size = 60;
 bool debug = true;
 bool touch = false;
 const int tft_rotation = 2;
-bool lock_screen_enabled = true;
+bool lock_screetruebled = true;
 uint16_t lock_screen_background_color = color565(0, 23, 178);
 
 bool swapXY = false;
 bool invertX = false;
-bool invertY = false;
+bool invertY = true;
 
 char device_name[] = "CYD-ZackPhone";
 
@@ -46,16 +42,9 @@ uint16_t top_bar_color = color565(100, 100, 100);
 
 bool lock_screen_swipe = false;
 
-int n_wifi = -1;
-int max_wifis = 7;
-
 const int keyWidth = 40;
 const int keyHeight = 40;
 const int keysPerRow = 10;
-
-const int MAX_DISPLAY_WIFI = max_wifis;
-String selectedSSID = "";
-bool wifi_password_required = false;
 
 String typed_text = "";
 bool keyboard_active = false;
