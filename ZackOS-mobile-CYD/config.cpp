@@ -21,7 +21,7 @@ uint16_t lock_screen_background_color = color565(0, 23, 178);
 
 bool swapXY = false;
 bool invertX = false;
-bool invertY = true;
+bool invertY = false;
 
 char device_name[] = "CYD-ZackPhone";
 

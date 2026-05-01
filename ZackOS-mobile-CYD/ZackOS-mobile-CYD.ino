@@ -67,7 +67,7 @@ void loop() {
     if (currently_touched) {
 
         // remap_pos() applique invertX / invertY / swapXY depuis config.cpp
-        remap_pos();
+        remap_pos(tx, ty);
 
         if (!isTouched) {
             touchStartTime = millis();

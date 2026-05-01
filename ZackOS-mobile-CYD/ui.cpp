@@ -69,27 +69,36 @@ void run_home() {
 // ── Touch : lecture brute via LGFX ─────────────────────────────────────────
 TouchPoint get_raw_pos() {
     uint16_t tx = 0, ty = 0;
+    
     if (tft.getTouch(&tx, &ty)) {
+        // Rejette les coordonnées hors écran
+        if (tx >= tft.width() || ty >= tft.height()) {
+            return { 0, 0, false };
+        }
+        // Rejette les coordonnées sur les bords exacts (souvent parasites)
+        if (tx == 0 || ty == 0 || tx == tft.width()-1 || ty == tft.height()-1) {
+            return { 0, 0, false };
+        }
         return { (int)tx, (int)ty, true };
     }
     return { 0, 0, false };
 }
-
 // ── Remapping + options swapXY / invertX / invertY ─────────────────────────
 //  LGFX applique déjà la calibration (x_min/x_max → coords écran).
 //  On conserve quand même les options de config pour compatibilité.
-void remap_pos() {
-    TouchPoint raw = get_raw_pos();
-    int x = raw.x;
-    int y = raw.y;
+static unsigned long last_touch = 0;
 
+// ui.cpp - remplace get_raw_pos() et remap_pos()
+
+void remap_pos(uint16_t tx, uint16_t ty) {
+    int x = (int)tx;
+    int y = (int)ty;
     if (swapXY) { int tmp = x; x = y; y = tmp; }
     if (invertX) x = tft.width()  - 1 - x;
     if (invertY) y = tft.height() - 1 - y;
-
-    global_pos_x  = x;
-    global_pos_y  = y;
-    screen_touched = raw.touched;
+    global_pos_x   = x;
+    global_pos_y   = y;
+    screen_touched = true;
 }
 
 TouchPoint get_pos() {

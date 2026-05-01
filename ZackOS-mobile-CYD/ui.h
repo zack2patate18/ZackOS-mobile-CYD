@@ -22,7 +22,7 @@ struct TouchPoint {
 };
 
 TouchPoint get_raw_pos();
-void       remap_pos();
+void remap_pos(uint16_t tx, uint16_t ty);
 TouchPoint get_pos();
 
 // ── Navigation ─────────────────────────────────────────────────────────────
