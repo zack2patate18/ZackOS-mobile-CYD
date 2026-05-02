@@ -3,9 +3,9 @@
 using namespace fs;
 
 #define SD_CS   5
-#define SD_CLK  18
-#define SD_MISO 19
-#define SD_MOSI 23
+#define SD_CLK  14
+#define SD_MISO 12
+#define SD_MOSI 13
 
 SPIClass spi_sd(VSPI);
 
@@ -13,7 +13,6 @@ void setup() {
     Serial.begin(115200);
     randomSeed(analogRead(0));
 
-    init_screen();
 
     spi_sd.begin(SD_CLK, SD_MISO, SD_MOSI, SD_CS);
     if (!SD.begin(SD_CS, spi_sd, 4000000)) {
@@ -21,6 +20,7 @@ void setup() {
     } else {
         Serial.println("SD OK");
     }
+    init_screen();
 
     tft.fillScreen(TFT_BLACK);
     Serial.println("Ready!");

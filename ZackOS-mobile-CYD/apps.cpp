@@ -298,34 +298,52 @@ void startup()
 
 void draw_sleep()
 {
-    static int r = 0, g = 0, b = 0;
+    tft.fillScreen(color565(0, 0, 0));
+    tft.setTextColor(color565(255, 255, 255), color565(0, 0, 0));
 
-    r += 10;
-    if (r > 250)
+    bool screen_on = false;
+    int idle = 0;
+
+    while (1)
     {
-        r = 0;
-        g += 10;
-    }
-    if (g > 250)
-    {
-        g = 0;
-        b += 10;
-    }
-    if (b > 250)
-    {
-        b = 0;
+        TouchPoint pos = get_pos();
+        uint16_t tx = 0, ty = 0;
+bool touched = tft.getTouch(&tx, &ty);
+if (touched) remap_pos(tx, ty);
+else screen_touched = false;
+
+        if (pos.touched)
+        {
+            idle = 0;
+            if (screen_on)
+            {
+                launch_app(home);
+                break;
+            }
+            else
+            {
+                screen_on = true;
+                tft.setBrightness(255);
+            }
+        }
+
+        if (screen_on)
+        {
+            tft.drawCentreString(current_time, tft.width() / 2, tft.height() / 2, 4);
+            idle++;
+            if (idle > 500)
+            {
+                screen_on = false;
+                idle = 0;
+                tft.fillScreen(color565(0, 0, 0));
+                tft.setBrightness(0);
+            }
+        }
+
+        delay(10);
     }
 
-    tft.fillScreen(color565(r, g, b));
-
-    TouchPoint p = get_pos();
-    if (touch)
-    {
-        current_app = 0;
-        need_to_be_redrawn = true;
-        need_to_be_refreshed = true;
-    }
-    delay(125);
+    tft.setBrightness(255);
 }
 
 void draw_lock_screen()

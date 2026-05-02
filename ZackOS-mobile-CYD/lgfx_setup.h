@@ -47,7 +47,7 @@ public:
             cfg.invert           = true;
             cfg.rgb_order        = false;
             cfg.dlen_16bit       = false;
-            cfg.bus_shared       = false;
+            cfg.bus_shared       = true;
             _panel_instance.config(cfg);
         }
 
@@ -64,7 +64,7 @@ public:
             cfg.x_max       = 319;
             cfg.y_min       = 0;
             cfg.y_max       = 479;
-            cfg.bus_shared  = false;
+            cfg.bus_shared  = true;
             cfg.offset_rotation = 0;
             _touch_instance.config(cfg);
             _panel_instance.setTouch(&_touch_instance);
