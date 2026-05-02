@@ -8,10 +8,10 @@ uint16_t text_color = color565(255, 255, 255);
 const int app_margin = 20;
 const int default_app_color = color565(252, 5, 227);
 const int max_apps_per_rows = 2;
-const int max_apps_per_columns = 3;
+const int max_apps_per_columns = 4;
 const int list_margin = 10;
 const int margin = 30;
-const int app_icon_size = 60;
+const int app_icon_size = 80;
 
 bool debug = false;
 bool touch = false;

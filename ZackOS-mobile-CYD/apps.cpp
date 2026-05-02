@@ -319,7 +319,7 @@ void lock_screen_handler()
     if (swipe && swipe_direction == 1)
     {
         double last = millis();
-        double speed = 300.0;
+        double speed = 600.0;
         double pos = tft.height();
 
         tft.setTextColor(TFT_BLACK, lock_screen_background_color);
@@ -545,6 +545,13 @@ void themes_handler()
 
                 background_color = selected_color;
 
+                int row = i % 4;
+                int col = i / 4;
+                int x = startX + col * (squareSize + padding);
+                int y = startY + row * (squareSize + padding);
+
+                tft.fillRoundRect(x, y, squareSize, squareSize, 5, changeBrightness(colors[i], 0.5));
+
                 if (debug)
                 {
                     Serial.print("Selected wallpaper : ");
@@ -559,9 +566,11 @@ void themes_handler()
 
 void draw_zackpay()
 {
-    tft.fillScreen(color565(125, 129, 203));
+    uint16_t zackpay_background_color = color565(125, 129, 203);
+    uint16_t zackpacy_pay_button_color = color565(255, 30, 30);
+    tft.fillScreen(zackpay_background_color);
     tft.setTextDatum(MC_DATUM);
-    tft.setTextColor(color565(0, 0, 0));
+    tft.setTextColor(color565(0, 0, 0), zackpay_background_color);
     draw_top_bar();
     draw_home_indicator();
     tft.drawCentreString("ZackPay", tft.width() / 2, 20, 4);
@@ -572,8 +581,8 @@ void draw_zackpay()
     strcat(balance_text, balance_str);
     strcat(balance_text, "$");
     tft.drawCentreString(balance_text, tft.width() / 2, 50, 2);
-    tft.setTextColor(color565(0, 0, 0));
-    tft.fillRect(tft.width() / 4, tft.height() / 2 - 30, tft.width() / 2, 35, color565(255, 30, 30));
+    tft.fillRect(tft.width() / 4, tft.height() / 2 - 30, tft.width() / 2, 35, zackpacy_pay_button_color);
+    tft.setTextColor(color565(0, 0, 0), zackpacy_pay_button_color);
     tft.drawCentreString("pay", tft.width() / 2, tft.height() / 2 - 15, 2);
 }
 
@@ -711,7 +720,7 @@ void draw_home()
         int x = startX + col * (app_icon_size + app_margin);
         int y = y_start + row * (app_icon_size + app_margin);
 
-        tft.fillRoundRect(x, y, app_icon_size, app_icon_size, 10, app_list[i].color);
+        tft.fillRoundRect(x, y, app_icon_size, app_icon_size, 15, app_list[i].color);
 
         if (debug)
         {
