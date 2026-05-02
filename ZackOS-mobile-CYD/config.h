@@ -91,3 +91,8 @@ extern bool torch_enabled;
 extern int led_pin_r;
 extern int led_pin_g;
 extern int led_pin_b;
+
+extern bool notification;
+extern char* notification_text;
+extern uint16_t notification_color;
+extern double notification_time;

@@ -25,3 +25,4 @@ TouchPoint get_pos();
 void launch_app(App& app);
 void handle_touch();
 void handle_swipe(TouchPoint start, TouchPoint end);
+void notification_handler();

@@ -82,11 +82,18 @@ void home_handler()
                 {
                     Serial.print("Selected App : ");
                     Serial.println(app_list[i].name);
+                    if (app_list[i].beta) {
+                        Serial.println("/!\\ App in beta");
+                    }
                 }
 
                 tft.fillRoundRect(x, y, app_icon_size, app_icon_size, 10, changeBrightness(app_list[i].color, 0.5));
                 delay(150);
 
+                notification = true;
+                notification_text = "/!\\ This app is still in beta";
+                notification_time = 2.0;
+                notification_handler();
                 launch_app(app_list[i]);
                 return;
             }
@@ -665,28 +672,28 @@ void draw_torch()
 }
 
 App settings = {
-    color565(91, 91, 91), settings_handler, draw_settings, "Settings", true};
+    color565(91, 91, 91), settings_handler, draw_settings, "Settings", true, false};
 
 App reboot_menu = {
-    color565(203, 249, 94), reboot_menu_handler, draw_reboot_menu, "Restart", true};
+    color565(203, 249, 94), reboot_menu_handler, draw_reboot_menu, "Restart", true, false};
 
 App sleep_app = {
-    color565(255, 0, 0), draw_sleep, draw_sleep, "Sleep", true};
+    color565(255, 0, 0), draw_sleep, draw_sleep, "Sleep", true, false};
 
 App lock = {
-    color565(0, 0, 0), lock_screen_handler, draw_lock_screen, "Lock", true};
+    color565(0, 0, 0), lock_screen_handler, draw_lock_screen, "Lock", true, false};
 
 App themes = {
-    color565(126, 252, 42), themes_handler, draw_themes, "Themes", true};
+    color565(126, 252, 42), themes_handler, draw_themes, "Themes", true, false};
 
 App keyboard = {
-    color565(0, 0, 0), keyboard_handler, draw_keyboard, "keyboard", true};
+    color565(0, 0, 0), keyboard_handler, draw_keyboard, "keyboard", true, false};
 
 App zackpay = {
-    color565(125, 129, 203), zackpay_handler, draw_zackpay, "ZackPay", true};
+    color565(125, 129, 203), zackpay_handler, draw_zackpay, "ZackPay", true, true};
 
 App torch = {
-    color565(0, 0, 0), torch_handler, draw_torch, "Torch", true};
+    color565(0, 0, 0), torch_handler, draw_torch, "Torch", true, true};
 
 App app_list[] = {home, settings, reboot_menu, sleep_app, lock, themes, zackpay, torch};
 int app_list_size = sizeof(app_list) / sizeof(app_list[0]);
@@ -821,4 +828,4 @@ void draw_page_indicator()
 }
 
 App home = {
-    background_color, home_handler, run_home, "home"};
+    background_color, home_handler, run_home, "home", false};

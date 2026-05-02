@@ -2,9 +2,6 @@
 
 using namespace fs;
 
-// SD card CYD (ESP32-2432S028) : bus VSPI dédié, SÉPARÉ de l'écran
-// Ecran  → HSPI : CLK=14, MOSI=13, MISO=12, CS=15
-// SD     → VSPI : CLK=18, MOSI=23, MISO=19, CS=5
 #define SD_CS   5
 #define SD_CLK  18
 #define SD_MISO 19
@@ -16,10 +13,8 @@ void setup() {
     Serial.begin(115200);
     randomSeed(analogRead(0));
 
-    // ── Ecran d'abord (HSPI) ───────────────────────────────────────────────
     init_screen();
 
-    // ── SD sur VSPI dédié — aucun conflit avec l'écran ────────────────────
     spi_sd.begin(SD_CLK, SD_MISO, SD_MOSI, SD_CS);
     if (!SD.begin(SD_CS, spi_sd, 4000000)) {
         Serial.println("SD ERR");
@@ -45,7 +40,6 @@ void setup() {
     if (debug) Serial.println("Launching lock screen");
 }
 
-// ── Etat du touch ──────────────────────────────────────────────────────────
 unsigned long touchStartTime = 0;
 bool          isTouched      = false;
 
@@ -60,13 +54,13 @@ void loop() {
         keyboard_handler();
     }
 
-    // ── LGFX : getTouch() remplace ts.touched() ───────────────────────────
+    notification_handler();
+
     uint16_t tx = 0, ty = 0;
     bool currently_touched = tft.getTouch(&tx, &ty);
 
     if (currently_touched) {
 
-        // remap_pos() applique invertX / invertY / swapXY depuis config.cpp
         remap_pos(tx, ty);
 
         if (!isTouched) {

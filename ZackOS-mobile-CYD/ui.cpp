@@ -149,3 +149,12 @@ void handle_swipe(TouchPoint start, TouchPoint end) {
         if (debug) Serial.println(dy > 0 ? "Swipe down" : "Swipe up");
     }
 }
+
+void notification_handler() {
+    if (!notification) return;
+    tft.setTextColor(TFT_BLACK, notification_color);
+    tft.fillRect(tft.width() / 5, tft.height() / 2, tft.width() / 5*3, tft.height() / 3, notification_color);
+    tft.drawCenterString(notification_text, tft.width() / 2, (tft.height() / 2) + ((tft.height() / 3) / 2));
+    delay(notification_time * 1000);
+    notification = false;
+}

@@ -9,6 +9,7 @@ struct App {
     AppFunction drawner;
     char name[15];
     bool on_home;
+    bool beta;
 };
 
 void home_handler();

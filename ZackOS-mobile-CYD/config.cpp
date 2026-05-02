@@ -72,3 +72,8 @@ bool torch_enabled;
 int led_pin_r = 4;
 int led_pin_g = 16;
 int led_pin_b = 17;
+
+bool notification = false;
+char* notification_text;
+uint16_t notification_color = color565(120, 120, 120);
+double notification_time = 3.0;
