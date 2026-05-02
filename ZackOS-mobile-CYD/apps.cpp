@@ -711,7 +711,7 @@ App zackpay = {
 App torch = {
     color565(0, 0, 0), torch_handler, draw_torch, "Torch", true, true};
 
-App app_list[] = {home, settings, reboot_menu, sleep_app, lock, themes, zackpay, torch};
+App app_list[] = {home, settings, reboot_menu, sleep_app, lock, themes, zackpay};
 int app_list_size = sizeof(app_list) / sizeof(app_list[0]);
 
 void draw_home()

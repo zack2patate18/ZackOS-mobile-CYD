@@ -13,7 +13,7 @@ const int list_margin = 10;
 const int margin = 30;
 const int app_icon_size = 80;
 
-bool debug = false;
+bool debug = true;
 bool touch = false;
 const int tft_rotation = 2;
 bool lock_screetruebled = true;
