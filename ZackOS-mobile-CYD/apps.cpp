@@ -82,7 +82,8 @@ void home_handler()
                 {
                     Serial.print("Selected App : ");
                     Serial.println(app_list[i].name);
-                    if (app_list[i].beta) {
+                    if (app_list[i].beta)
+                    {
                         Serial.println("/!\\ App in beta");
                     }
                 }
@@ -90,10 +91,13 @@ void home_handler()
                 tft.fillRoundRect(x, y, app_icon_size, app_icon_size, 10, changeBrightness(app_list[i].color, 0.5));
                 delay(150);
 
-                notification = true;
-                notification_text = "/!\\ This app is still in beta";
-                notification_time = 2.0;
-                notification_handler();
+                if (app_list[i].beta)
+                {
+                    notification = true;
+                    notification_text = "/!\\ This app is still in beta";
+                    notification_time = 2.0;
+                    notification_handler();
+                }
                 launch_app(app_list[i]);
                 return;
             }
@@ -269,15 +273,27 @@ void startup()
 {
     tft.fillScreen(color565(0, 0, 0));
     delay(500);
-    for (int i = 1; i <= 10; i++)
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.drawCentreString("ZackOS", tft.width() / 2, tft.height() / 2, 4);
+    tft.drawCentreString("By Zack", tft.width() / 2, tft.height() / 2 + 30, 2);
+    for (int i = 0; i < 255; i++)
     {
-        tft.fillScreen(color565(i * 10, i * 10, i * 10));
-        tft.setTextColor(color565(250 / i, 250 / i, 250 / i));
-        tft.drawCentreString("ZackOS", tft.width() / 2, tft.height() / 2, 2);
-        tft.drawCentreString("By Zack", tft.width() / 2, tft.height() / 2 + 30, 2);
-        delay(250 + (i * 3));
+        tft.setBrightness(i);
+        delay(10);
     }
-    delay(2000);
+    delay(500);
+    for (int i = 255; i > 0; i--)
+    {
+        tft.setBrightness(i);
+        delay(5);
+    }
+    launch_app(lock);
+    lock.drawner();
+    for (int i = 0; i < 255; i++)
+    {
+        tft.setBrightness(i);
+        delay(1);
+    }
 }
 
 void draw_sleep()

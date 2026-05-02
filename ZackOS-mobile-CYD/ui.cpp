@@ -5,7 +5,7 @@ LGFX tft;
 void init_screen() {
     tft.init();
     tft.setRotation(2);
-    tft.setBrightness(255);
+    tft.setBrightness(0);
 }
 
 void launch_app(App& app) {
