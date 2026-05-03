@@ -136,3 +136,14 @@ bool create_dir(const char* path) {
     if (dir_exists(path)) return true;
     return SD.mkdir(path);
 }
+
+String read_file(const char* path) {
+    File f = SD.open(path);
+    if (!f) return "";
+    String content = "";
+    while (f.available()) {
+        content += (char)f.read();
+    }
+    f.close();
+    return content;
+}

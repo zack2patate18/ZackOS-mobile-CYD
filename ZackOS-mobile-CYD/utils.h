@@ -20,3 +20,4 @@ bool dir_exists(const char* path);
 bool write_file(const char* path, const char* content);
 bool create_file(const char* path);
 bool create_dir(const char* path);
+String read_file(const char* path);
