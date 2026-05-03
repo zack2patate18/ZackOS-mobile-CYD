@@ -899,7 +899,7 @@ App themes = {
     color565(126, 252, 42), themes_handler, draw_themes, "Themes", true, false};
 
 App keyboard = {
-    color565(0, 0, 0), keyboard_handler, draw_keyboard, "keyboard", true, false};
+    color565(0, 0, 0), keyboard_handler, draw_keyboard, "keyboard", false, false};
 
 App zackpay = {
     color565(125, 129, 203), zackpay_handler, draw_zackpay, "ZackPay", true, true};
