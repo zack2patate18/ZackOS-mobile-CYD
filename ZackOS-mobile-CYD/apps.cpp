@@ -107,6 +107,11 @@ void home_handler()
     }
 }
 
+void init_settings()
+{
+    settings_erease_all_button = Button(30, tft.height() - 70, tft.width() - (30 * 2), 30, color565(255, 0, 0), (char *)"Erease all data", color565(0, 0, 0));
+}
+
 void draw_settings()
 {
 
@@ -151,6 +156,8 @@ void draw_settings()
     tft.drawString(chip_speed_text, margin + list_margin, 190, 2);
     tft.drawString(os_name, margin + list_margin, 215, 2);
     tft.drawString(os_version_text, margin + list_margin, 235, 2);
+
+    settings_erease_all_button.draw();
 
     draw_home_indicator();
     draw_top_bar();
@@ -198,6 +205,34 @@ void settings_handler()
                 current_app = i;
             }
         }
+    }
+
+    if (settings_erease_all_button.collide(global_pos_x, global_pos_y))
+    {
+        tft.fillScreen(color565(0, 0, 0));
+        tft.setTextColor(color565(255, 255, 255), color565(0, 0, 0));
+        tft.drawCenterString("Ereasing all data...", tft.width() / 2, tft.height() / 2, 4);
+
+        if (debug) Serial.println("Opening root");
+        std::vector<String> paths;
+        File root = SD.open("/");
+        if (!root)
+        {
+            Serial.println("SD open failed");
+            return;
+        }
+        if (debug) Serial.println("Listing files");
+        list_files_non_recursive(root, "/", paths);
+        root.close();
+        if (debug) Serial.printf("Found %d files\n", paths.size());
+
+        for (int i = 0; i < (int)paths.size(); i++)
+        {
+            if (debug) Serial.printf("Deleting %s\n", paths[i].c_str());
+            SD.remove(paths[i]);
+        }
+        if (debug) Serial.println("Done");
+        launch_app(home);
     }
 }
 
@@ -726,12 +761,17 @@ void draw_calculator()
     calculator_clear_button.draw();
 }
 
-void calculator_handler() {
-    if (debug) Serial.printf("calculator_handler: x=%d y=%d touched=%d\n", global_pos_x, global_pos_y, screen_touched);
-    if (!touch) return;
+void calculator_handler()
+{
+    if (debug)
+        Serial.printf("calculator_handler: x=%d y=%d touched=%d\n", global_pos_x, global_pos_y, screen_touched);
+    if (!touch)
+        return;
 
-    for (int i = 0; i <= 9; i++) {
-        if (calculator_digit_buttons[i].collide(global_pos_x, global_pos_y)) {
+    for (int i = 0; i <= 9; i++)
+    {
+        if (calculator_digit_buttons[i].collide(global_pos_x, global_pos_y))
+        {
             char digit[2] = {(char)('0' + i), '\0'};
             if (strlen(calculator_calcul) < 29)
                 strncat(calculator_calcul, digit, 1);
@@ -740,54 +780,69 @@ void calculator_handler() {
         }
     }
 
-    if (calculator_plus_button.collide(global_pos_x, global_pos_y)) {
+    if (calculator_plus_button.collide(global_pos_x, global_pos_y))
+    {
         if (strlen(calculator_calcul) < 29)
             strncat(calculator_calcul, "+", 1);
         draw_calculator_display();
         return;
     }
 
-    if (calculator_minus_button.collide(global_pos_x, global_pos_y)) {
+    if (calculator_minus_button.collide(global_pos_x, global_pos_y))
+    {
         if (strlen(calculator_calcul) < 29)
             strncat(calculator_calcul, "-", 1);
         draw_calculator_display();
         return;
     }
 
-    if (calculator_multiply_button.collide(global_pos_x, global_pos_y)) {
+    if (calculator_multiply_button.collide(global_pos_x, global_pos_y))
+    {
         if (strlen(calculator_calcul) < 29)
             strncat(calculator_calcul, "*", 1);
         draw_calculator_display();
         return;
     }
 
-    if (calculator_divide_button.collide(global_pos_x, global_pos_y)) {
+    if (calculator_divide_button.collide(global_pos_x, global_pos_y))
+    {
         if (strlen(calculator_calcul) < 29)
             strncat(calculator_calcul, "/", 1);
         draw_calculator_display();
         return;
     }
 
-    if (calculator_clear_button.collide(global_pos_x, global_pos_y)) {
+    if (calculator_clear_button.collide(global_pos_x, global_pos_y))
+    {
         memset(calculator_calcul, 0, sizeof(calculator_calcul));
         draw_calculator_display();
         return;
     }
 
-    if (calculator_equal_button.collide(global_pos_x, global_pos_y)) {
-        if (!strcmp(calculator_calcul, "//00")) launch_app(hidden_menu);
+    if (calculator_equal_button.collide(global_pos_x, global_pos_y))
+    {
+        if (!strcmp(calculator_calcul, "//00"))
+            launch_app(hidden_menu);
         long result = 0;
         long current = 0;
         char op = '+';
-        for (int i = 0; i <= (int)strlen(calculator_calcul); i++) {
+        for (int i = 0; i <= (int)strlen(calculator_calcul); i++)
+        {
             char c = calculator_calcul[i];
-            if (c >= '0' && c <= '9') {
+            if (c >= '0' && c <= '9')
+            {
                 current = current * 10 + (c - '0');
-            } else {
-                if (op == '+') result += current;
-                else if (op == '-') result -= current;
-                else if (op == '*') result *= current;
-                else if (op == '/') result = (current != 0) ? result / current : 0;
+            }
+            else
+            {
+                if (op == '+')
+                    result += current;
+                else if (op == '-')
+                    result -= current;
+                else if (op == '*')
+                    result *= current;
+                else if (op == '/')
+                    result = (current != 0) ? result / current : 0;
                 op = c;
                 current = 0;
             }
@@ -799,7 +854,8 @@ void calculator_handler() {
     }
 }
 
-void draw_calculator_display() {
+void draw_calculator_display()
+{
     tft.fillRect(10, 50, tft.width() - 20, 60, color565(20, 20, 20));
     tft.setTextColor(TFT_WHITE, color565(20, 20, 20));
     tft.setTextDatum(MR_DATUM);
@@ -849,34 +905,45 @@ void init_calculator()
     calculator_plus_button = Button(3 * btn_w + margin, grid_y + 3 * (btn_h + margin), btn_w - margin, btn_h, op_color, (char *)"+", op_outline);
 }
 
-void init_hidden_menu() {
+void init_hidden_menu()
+{
 
-    for (int i = 0; i < 3; i++) {
-        hidden_menu_buttons[i] = Button(30, 30 + 30 * (i+1), tft.width() - (30 * 2), 30 + 3, color565(255, 0, 0), "", color565(0, 0, 0));
+    for (int i = 0; i < 3; i++)
+    {
+        hidden_menu_buttons[i] = Button(30, 30 + 30 * (i + 1), tft.width() - (30 * 2), 30 + 3, color565(255, 0, 0), "", color565(0, 0, 0));
     }
 
-    hidden_menu_buttons[0].text = (char*)"show all";
-    hidden_menu_buttons[1].text = (char*)"boost freq (240)";
-    hidden_menu_buttons[2].text = (char*)"normal freq (160)";
+    hidden_menu_buttons[0].text = (char *)"show all";
+    hidden_menu_buttons[1].text = (char *)"boost freq (240)";
+    hidden_menu_buttons[2].text = (char *)"normal freq (160)";
 }
 
-void draw_hidden_menu() {
+void draw_hidden_menu()
+{
     tft.fillScreen(color565(20, 20, 20));
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++)
+    {
         hidden_menu_buttons[i].draw();
     }
 }
 
-void hidden_menu_handler() {
-    for (int i = 0; i < 3; i++) {
-        if (hidden_menu_buttons[i].collide(global_pos_x, global_pos_y)) {
-            if (i == 0) {
+void hidden_menu_handler()
+{
+    for (int i = 0; i < 3; i++)
+    {
+        if (hidden_menu_buttons[i].collide(global_pos_x, global_pos_y))
+        {
+            if (i == 0)
+            {
                 launch_app(home);
                 op_mode = !op_mode;
             }
-            else if (i == 1) {
+            else if (i == 1)
+            {
                 setCpuFrequencyMhz(240);
-            } else if (i == 2) {
+            }
+            else if (i == 2)
+            {
                 setCpuFrequencyMhz(160);
             }
         }
@@ -910,9 +977,8 @@ App torch = {
 App calculator = {
     color565(200, 50, 50), calculator_handler, draw_calculator, "Calculator", true, false};
 
-App hidden_menu {
-    color565(0, 0, 0), hidden_menu_handler, draw_hidden_menu, "Hidden menu", false, false
-};
+App hidden_menu{
+    color565(0, 0, 0), hidden_menu_handler, draw_hidden_menu, "Hidden menu", false, false};
 
 App app_list[] = {home, settings, reboot_menu, sleep_app, lock, themes, zackpay, calculator, hidden_menu, keyboard};
 int app_list_size = sizeof(app_list) / sizeof(app_list[0]);

@@ -108,3 +108,5 @@ extern char calculator_calcul[30];
 
 extern Button hidden_menu_buttons[3];
 extern bool op_mode;
+
+extern Button settings_erease_all_button;

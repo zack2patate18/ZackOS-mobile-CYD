@@ -2,120 +2,126 @@
 
 using namespace fs;
 
-#define SD_CS   5
-#define SD_CLK  14
+#define SD_CS 5
+#define SD_CLK 14
 #define SD_MISO 12
 #define SD_MOSI 13
 
-SPIClass spi_sd(VSPI);
+// SPIClass spi_sd(VSPI);
+
+SPIClass spi_sd(HSPI);
 
 void setup() {
-    Serial.begin(115200);
-    randomSeed(analogRead(0));
+  Serial.begin(115200);
+  randomSeed(analogRead(0));
+
+  init_screen();
+
+  spi_sd.begin(14, 12, 13, SD_CS);
+  delay(100);
+
+  if (!SD.begin(SD_CS, spi_sd, 4000000)) {
+    Serial.println("SD ERR");
+  } else {
+    Serial.println("SD OK");
+  }
 
 
-    spi_sd.begin(SD_CLK, SD_MISO, SD_MOSI, SD_CS);
-    if (!SD.begin(SD_CS, spi_sd, 4000000)) {
-        Serial.println("SD ERR");
-    } else {
-        Serial.println("SD OK");
-    }
-    init_screen();
+  tft.fillScreen(TFT_BLACK);
+  Serial.println("Ready!");
 
-    tft.fillScreen(TFT_BLACK);
-    Serial.println("Ready!");
+  tft.drawCentreString("ZackOS Mobile", tft.width() / 2, tft.height() / 2, 2);
 
-    tft.drawCentreString("ZackOS Mobile", tft.width() / 2, tft.height() / 2, 2);
+  startup();
+  setup_torch();
+  File root = SD.open("/");
+  std::vector<String> r_paths;
+  list_files(root, "", r_paths);
+  root.close();
+  for (String path : r_paths) {
+    Serial.println(path);
+  }
+  launch_app(lock);
+  if (debug) Serial.println("Launching lock screen");
 
-    startup();
-    setup_torch();
-    File root = SD.open("/");
-    std::vector<String> r_paths;
-    list_files(root, "", r_paths);
-    root.close();
-    for (String path : r_paths) {
-        Serial.println(path);
-    }
-    launch_app(lock);
-    if (debug) Serial.println("Launching lock screen");
-
-    init_calculator();
-    init_hidden_menu();
+  init_calculator();
+  init_hidden_menu();
+  init_settings();
 }
 
 unsigned long touchStartTime = 0;
-bool          isTouched      = false;
+bool isTouched = false;
 
 TouchPoint start_p = { -1, -1, false };
-TouchPoint end_p   = { -1, -1, false };
+TouchPoint end_p = { -1, -1, false };
 
 void loop() {
-    touch = false;
+  touch = false;
 
-    if (keyboard_active) {
-        draw_keyboard();
-        keyboard_handler();
+  if (keyboard_active) {
+    draw_keyboard();
+    keyboard_handler();
+  }
+
+  notification_handler();
+
+  uint16_t tx = 0, ty = 0;
+  bool currently_touched = tft.getTouch(&tx, &ty);
+
+  if (currently_touched) {
+
+    remap_pos(tx, ty);
+
+    if (!isTouched) {
+      touchStartTime = millis();
+      isTouched = true;
+      start_p = get_pos();
     }
+    end_p = get_pos();
 
-    notification_handler();
+  } else {
+    screen_touched = false;
 
-    uint16_t tx = 0, ty = 0;
-    bool currently_touched = tft.getTouch(&tx, &ty);
+    if (isTouched) {
+      unsigned long pressDuration = millis() - touchStartTime;
 
-    if (currently_touched) {
+      if (debug)
+        tft.fillCircle(get_pos().x, get_pos().y, 10, color565(255, 0, 255));
 
-        remap_pos(tx, ty);
-
-        if (!isTouched) {
-            touchStartTime = millis();
-            isTouched      = true;
-            start_p        = get_pos();
+      if (pressDuration >= LONG_PRESS_THRESHOLD) {
+        if (debug) Serial.println("Long Touch detected");
+        handle_swipe(start_p, end_p);
+        if (swipe && strcmp(app_list[current_app].name, "Lock") == 0) {
+          lock_screen_handler();
+          if (debug) Serial.println("Screen handler called from swipe");
+        } else {
+          if (start_p.y > tft.height() - 40) {
+            launch_app(home);
+          }
         }
-        end_p = get_pos();
+        handle_touch();
+      } else {
+        if (debug)
+          tft.fillCircle(get_pos().x, get_pos().y, 10, color565(255, 0, 0));
+        if (debug) Serial.println("Short Touch detected");
 
-    } else {
-        screen_touched = false;
-
-        if (isTouched) {
-            unsigned long pressDuration = millis() - touchStartTime;
-
-            if (debug)
-                tft.fillCircle(get_pos().x, get_pos().y, 10, color565(255, 0, 255));
-
-            if (pressDuration >= LONG_PRESS_THRESHOLD) {
-                if (debug) Serial.println("Long Touch detected");
-                handle_swipe(start_p, end_p);
-                if (swipe && strcmp(app_list[current_app].name, "Lock") == 0) {
-                    lock_screen_handler();
-                    if (debug) Serial.println("Screen handler called from swipe");
-                } else {
-                    if (start_p.y > tft.height() - 40) {
-                        launch_app(home);
-                    }
-                }
-                handle_touch();
-            } else {
-                if (debug)
-                    tft.fillCircle(get_pos().x, get_pos().y, 10, color565(255, 0, 0));
-                if (debug) Serial.println("Short Touch detected");
-
-                touch = true;
-                swipe = false;
-                handle_touch();
-                app_list[current_app].run();
-            }
-
-            isTouched = false;
-        }
-    }
-
-    if (need_to_be_redrawn) {
-        app_list[current_app].drawner();
-        need_to_be_redrawn = false;
-    }
-
-    if (need_to_be_refreshed) {
+        touch = true;
+        swipe = false;
+        handle_touch();
         app_list[current_app].run();
-        need_to_be_refreshed = false;
+      }
+
+      isTouched = false;
     }
+  }
+
+  if (need_to_be_redrawn) {
+    app_list[current_app].drawner();
+    need_to_be_redrawn = false;
+  }
+
+  if (need_to_be_refreshed) {
+    app_list[current_app].run();
+    need_to_be_refreshed = false;
+  }
 }

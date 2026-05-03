@@ -18,6 +18,8 @@ void draw_home();
 
 void settings_handler();
 
+void init_settings();
+
 void handle_apps();
 
 void startup();

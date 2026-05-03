@@ -96,3 +96,5 @@ char calculator_calcul[30] = "";
 
 Button hidden_menu_buttons[3];
 bool op_mode = false;
+
+Button settings_erease_all_button = Button();
