@@ -40,6 +40,7 @@ void setup() {
     if (debug) Serial.println("Launching lock screen");
 
     init_calculator();
+    init_hidden_menu();
 }
 
 unsigned long touchStartTime = 0;

@@ -54,6 +54,12 @@ void init_calculator();
 
 void draw_calculator_display();
 
+void draw_hidden_menu();
+
+void hidden_menu_handler();
+
+void init_hidden_menu();
+
 extern App settings;
 extern App home;
 extern int current_app;
@@ -66,3 +72,4 @@ extern App keyboard;
 extern App themes;
 extern App torch;
 extern App calculator;
+extern App hidden_menu;

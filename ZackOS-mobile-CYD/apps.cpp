@@ -63,7 +63,7 @@ void home_handler()
 
         for (int i = start_index; i < end_index; i++)
         {
-            if (!app_list[i].on_home)
+            if (!app_list[i].on_home && !op_mode)
                 continue;
 
             int row = visible_index / max_apps_per_row;
@@ -775,6 +775,7 @@ void calculator_handler() {
     }
 
     if (calculator_equal_button.collide(global_pos_x, global_pos_y)) {
+        if (!strcmp(calculator_calcul, "//00")) launch_app(hidden_menu);
         long result = 0;
         long current = 0;
         char op = '+';
@@ -848,6 +849,33 @@ void init_calculator()
     calculator_plus_button = Button(3 * btn_w + margin, grid_y + 3 * (btn_h + margin), btn_w - margin, btn_h, op_color, (char *)"+", op_outline);
 }
 
+void init_hidden_menu() {
+
+    for (int i = 0; i < 1; i++) {
+        hidden_menu_buttons[i] = Button(30, 30 * (i+1), tft.width() - (30 * 2), 30 * (i+1) + 3, color565(255, 0, 0), "", color565(0, 0, 0));
+    }
+
+    hidden_menu_buttons[0].text = (char*)"show all";
+}
+
+void draw_hidden_menu() {
+    tft.fillScreen(color565(20, 20, 20));
+    for (int i = 0; i < 1; i++) {
+        hidden_menu_buttons[i].draw();
+    }
+}
+
+void hidden_menu_handler() {
+    for (int i = 0; i < 1; i++) {
+        if (hidden_menu_buttons[i].collide(global_pos_x, global_pos_y)) {
+            if (i == 0) {
+                launch_app(home);
+                op_mode = !op_mode;
+            }
+        }
+    }
+}
+
 App settings = {
     color565(91, 91, 91), settings_handler, draw_settings, "Settings", true, false};
 
@@ -873,9 +901,13 @@ App torch = {
     color565(0, 0, 0), torch_handler, draw_torch, "Torch", true, true};
 
 App calculator = {
-    color565(200, 50, 50), calculator_handler, draw_calculator, "Calculator", true, true};
+    color565(200, 50, 50), calculator_handler, draw_calculator, "Calculator", true, false};
 
-App app_list[] = {home, settings, reboot_menu, sleep_app, lock, themes, zackpay, calculator};
+App hidden_menu {
+    color565(0, 0, 0), hidden_menu_handler, draw_hidden_menu, "Hidden menu", false, false
+};
+
+App app_list[] = {home, settings, reboot_menu, sleep_app, lock, themes, zackpay, calculator, hidden_menu, keyboard};
 int app_list_size = sizeof(app_list) / sizeof(app_list[0]);
 
 void draw_home()
@@ -894,7 +926,7 @@ void draw_home()
     for (int i = start_index; i < end_index; i++)
     {
 
-        if (!app_list[i].on_home)
+        if (!app_list[i].on_home && !op_mode)
             continue;
 
         int row = visible_index / max_apps_per_row;
