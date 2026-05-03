@@ -851,26 +851,33 @@ void init_calculator()
 
 void init_hidden_menu() {
 
-    for (int i = 0; i < 1; i++) {
-        hidden_menu_buttons[i] = Button(30, 30 * (i+1), tft.width() - (30 * 2), 30 * (i+1) + 3, color565(255, 0, 0), "", color565(0, 0, 0));
+    for (int i = 0; i < 3; i++) {
+        hidden_menu_buttons[i] = Button(30, 30 + 30 * (i+1), tft.width() - (30 * 2), 30 + 3, color565(255, 0, 0), "", color565(0, 0, 0));
     }
 
     hidden_menu_buttons[0].text = (char*)"show all";
+    hidden_menu_buttons[1].text = (char*)"boost freq (240)";
+    hidden_menu_buttons[2].text = (char*)"normal freq (160)";
 }
 
 void draw_hidden_menu() {
     tft.fillScreen(color565(20, 20, 20));
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 3; i++) {
         hidden_menu_buttons[i].draw();
     }
 }
 
 void hidden_menu_handler() {
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 3; i++) {
         if (hidden_menu_buttons[i].collide(global_pos_x, global_pos_y)) {
             if (i == 0) {
                 launch_app(home);
                 op_mode = !op_mode;
+            }
+            else if (i == 1) {
+                setCpuFrequencyMhz(240);
+            } else if (i == 2) {
+                setCpuFrequencyMhz(160);
             }
         }
     }

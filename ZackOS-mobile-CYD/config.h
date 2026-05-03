@@ -106,5 +106,5 @@ extern Button calculator_clear_button;
 extern Button calculator_digit_buttons[10];
 extern char calculator_calcul[30];
 
-extern Button hidden_menu_buttons[1];
+extern Button hidden_menu_buttons[3];
 extern bool op_mode;

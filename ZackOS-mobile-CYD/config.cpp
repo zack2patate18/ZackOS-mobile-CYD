@@ -94,5 +94,5 @@ Button calculator_digit_buttons[10] = {
 
 char calculator_calcul[30] = "";
 
-Button hidden_menu_buttons[1];
+Button hidden_menu_buttons[3];
 bool op_mode = false;
