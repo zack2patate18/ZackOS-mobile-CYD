@@ -50,6 +50,10 @@ void draw_calculator();
 
 void calculator_handler();
 
+void init_calculator();
+
+void draw_calculator_display();
+
 extern App settings;
 extern App home;
 extern int current_app;

@@ -709,13 +709,143 @@ void draw_torch()
 
 void draw_calculator()
 {
-    tft.fillScreen(color565(50, 50, 50));
-    tft.fillRect(30, 80, tft.width() - 30 * 2, 40, color565(40, 40, 40));
-    tft.setTextColor(color565(200, 200, 200), color565(40, 40, 40));
-    tft.drawCenterString("calculator", tft.width() / 2, 80, 4);
+    tft.fillScreen(color565(30, 30, 30));
+
+    tft.fillRect(10, 50, tft.width() - 20, 60, color565(20, 20, 20));
+    tft.setTextColor(TFT_WHITE, color565(20, 20, 20));
+    tft.setTextDatum(MR_DATUM);
+    tft.drawString("0", tft.width() - 15, 80, 4);
+
+    for (int i = 0; i <= 9; i++)
+        calculator_digit_buttons[i].draw();
+    calculator_plus_button.draw();
+    calculator_minus_button.draw();
+    calculator_multiply_button.draw();
+    calculator_divide_button.draw();
+    calculator_equal_button.draw();
+    calculator_clear_button.draw();
 }
 
 void calculator_handler() {
+    if (debug) Serial.printf("calculator_handler: x=%d y=%d touched=%d\n", global_pos_x, global_pos_y, screen_touched);
+    if (!touch) return;
+
+    for (int i = 0; i <= 9; i++) {
+        if (calculator_digit_buttons[i].collide(global_pos_x, global_pos_y)) {
+            char digit[2] = {(char)('0' + i), '\0'};
+            if (strlen(calculator_calcul) < 29)
+                strncat(calculator_calcul, digit, 1);
+            draw_calculator_display();
+            return;
+        }
+    }
+
+    if (calculator_plus_button.collide(global_pos_x, global_pos_y)) {
+        if (strlen(calculator_calcul) < 29)
+            strncat(calculator_calcul, "+", 1);
+        draw_calculator_display();
+        return;
+    }
+
+    if (calculator_minus_button.collide(global_pos_x, global_pos_y)) {
+        if (strlen(calculator_calcul) < 29)
+            strncat(calculator_calcul, "-", 1);
+        draw_calculator_display();
+        return;
+    }
+
+    if (calculator_multiply_button.collide(global_pos_x, global_pos_y)) {
+        if (strlen(calculator_calcul) < 29)
+            strncat(calculator_calcul, "*", 1);
+        draw_calculator_display();
+        return;
+    }
+
+    if (calculator_divide_button.collide(global_pos_x, global_pos_y)) {
+        if (strlen(calculator_calcul) < 29)
+            strncat(calculator_calcul, "/", 1);
+        draw_calculator_display();
+        return;
+    }
+
+    if (calculator_clear_button.collide(global_pos_x, global_pos_y)) {
+        memset(calculator_calcul, 0, sizeof(calculator_calcul));
+        draw_calculator_display();
+        return;
+    }
+
+    if (calculator_equal_button.collide(global_pos_x, global_pos_y)) {
+        long result = 0;
+        long current = 0;
+        char op = '+';
+        for (int i = 0; i <= (int)strlen(calculator_calcul); i++) {
+            char c = calculator_calcul[i];
+            if (c >= '0' && c <= '9') {
+                current = current * 10 + (c - '0');
+            } else {
+                if (op == '+') result += current;
+                else if (op == '-') result -= current;
+                else if (op == '*') result *= current;
+                else if (op == '/') result = (current != 0) ? result / current : 0;
+                op = c;
+                current = 0;
+            }
+        }
+        memset(calculator_calcul, 0, sizeof(calculator_calcul));
+        snprintf(calculator_calcul, 29, "%ld", result);
+        draw_calculator_display();
+        return;
+    }
+}
+
+void draw_calculator_display() {
+    tft.fillRect(10, 50, tft.width() - 20, 60, color565(20, 20, 20));
+    tft.setTextColor(TFT_WHITE, color565(20, 20, 20));
+    tft.setTextDatum(MR_DATUM);
+    if (strlen(calculator_calcul) == 0)
+        tft.drawString("0", tft.width() - 15, 80, 4);
+    else
+        tft.drawString(calculator_calcul, tft.width() - 15, 80, 4);
+}
+
+void init_calculator()
+{
+
+    const int btn_w = (tft.width() - 10) / 4;
+    const int btn_h = 50;
+    const int margin = 2;
+    const int grid_y = 130;
+
+    uint16_t digit_color = color565(60, 60, 60);
+    uint16_t digit_outline = color565(80, 80, 80);
+    uint16_t op_color = color565(200, 120, 0);
+    uint16_t op_outline = color565(235, 171, 52);
+    uint16_t eq_color = color565(235, 171, 52);
+    uint16_t eq_outline = color565(255, 200, 80);
+    uint16_t clr_color = color565(180, 30, 30);
+    uint16_t clr_outline = color565(220, 60, 60);
+
+    static char digit_labels[10][2] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+
+    calculator_digit_buttons[7] = Button(0 * btn_w + margin, grid_y + 0 * (btn_h + margin), btn_w - margin, btn_h, digit_color, digit_labels[7], digit_outline);
+    calculator_digit_buttons[8] = Button(1 * btn_w + margin, grid_y + 0 * (btn_h + margin), btn_w - margin, btn_h, digit_color, digit_labels[8], digit_outline);
+    calculator_digit_buttons[9] = Button(2 * btn_w + margin, grid_y + 0 * (btn_h + margin), btn_w - margin, btn_h, digit_color, digit_labels[9], digit_outline);
+    calculator_divide_button = Button(3 * btn_w + margin, grid_y + 0 * (btn_h + margin), btn_w - margin, btn_h, op_color, (char *)"/", op_outline);
+
+    calculator_digit_buttons[4] = Button(0 * btn_w + margin, grid_y + 1 * (btn_h + margin), btn_w - margin, btn_h, digit_color, digit_labels[4], digit_outline);
+    calculator_digit_buttons[5] = Button(1 * btn_w + margin, grid_y + 1 * (btn_h + margin), btn_w - margin, btn_h, digit_color, digit_labels[5], digit_outline);
+    calculator_digit_buttons[6] = Button(2 * btn_w + margin, grid_y + 1 * (btn_h + margin), btn_w - margin, btn_h, digit_color, digit_labels[6], digit_outline);
+    calculator_multiply_button = Button(3 * btn_w + margin, grid_y + 1 * (btn_h + margin), btn_w - margin, btn_h, op_color, (char *)"*", op_outline);
+
+    calculator_digit_buttons[1] = Button(0 * btn_w + margin, grid_y + 2 * (btn_h + margin), btn_w - margin, btn_h, digit_color, digit_labels[1], digit_outline);
+    calculator_digit_buttons[2] = Button(1 * btn_w + margin, grid_y + 2 * (btn_h + margin), btn_w - margin, btn_h, digit_color, digit_labels[2], digit_outline);
+    calculator_digit_buttons[3] = Button(2 * btn_w + margin, grid_y + 2 * (btn_h + margin), btn_w - margin, btn_h, digit_color, digit_labels[3], digit_outline);
+    calculator_minus_button = Button(3 * btn_w + margin, grid_y + 2 * (btn_h + margin), btn_w - margin, btn_h, op_color, (char *)"-", op_outline);
+
+    calculator_clear_button = Button(0 * btn_w + margin, grid_y + 3 * (btn_h + margin), btn_w - margin, btn_h, clr_color, (char *)"C", clr_outline);
+    calculator_digit_buttons[0] = Button(1 * btn_w + margin, grid_y + 3 * (btn_h + margin), btn_w - margin, btn_h, digit_color, digit_labels[0], digit_outline);
+    calculator_equal_button = Button(2 * btn_w + margin, grid_y + 3 * (btn_h + margin), btn_w - margin, btn_h, eq_color, (char *)"=", eq_outline);
+    calculator_plus_button = Button(3 * btn_w + margin, grid_y + 3 * (btn_h + margin), btn_w - margin, btn_h, op_color, (char *)"+", op_outline);
 }
 
 App settings = {

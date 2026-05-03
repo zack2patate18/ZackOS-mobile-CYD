@@ -21,7 +21,7 @@
 #include "apps.h"
 #include "system.h"
 #include "utils.h"
-
+#include "ui_elements.h"
 
 extern uint16_t background_color;
 extern uint16_t text_color;
@@ -96,3 +96,12 @@ extern bool notification;
 extern char* notification_text;
 extern uint16_t notification_color;
 extern double notification_time;
+
+extern Button calculator_equal_button;
+extern Button calculator_divide_button;
+extern Button calculator_multiply_button;
+extern Button calculator_minus_button;
+extern Button calculator_plus_button;
+extern Button calculator_clear_button;
+extern Button calculator_digit_buttons[10];
+extern char calculator_calcul[30];

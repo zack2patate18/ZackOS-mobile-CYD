@@ -16,7 +16,7 @@ const int app_icon_size = 80;
 bool debug = true;
 bool touch = false;
 const int tft_rotation = 2;
-bool lock_screetruebled = true;
+bool lock_screen_enabled = true;
 uint16_t lock_screen_background_color = color565(0, 23, 178);
 
 bool swapXY = false;
@@ -77,3 +77,19 @@ bool notification = false;
 char* notification_text;
 uint16_t notification_color = color565(120, 120, 120);
 double notification_time = 3.0;
+
+Button calculator_equal_button    = Button(0, 0, 0, 0, 0, (char*)"", 0);
+Button calculator_divide_button   = Button(0, 0, 0, 0, 0, (char*)"", 0);
+Button calculator_multiply_button = Button(0, 0, 0, 0, 0, (char*)"", 0);
+Button calculator_minus_button    = Button(0, 0, 0, 0, 0, (char*)"", 0);
+Button calculator_plus_button     = Button(0, 0, 0, 0, 0, (char*)"", 0);
+Button calculator_clear_button    = Button(0, 0, 0, 0, 0, (char*)"", 0);
+Button calculator_digit_buttons[10] = {
+    Button(0,0,0,0,0,(char*)"",0), Button(0,0,0,0,0,(char*)"",0),
+    Button(0,0,0,0,0,(char*)"",0), Button(0,0,0,0,0,(char*)"",0),
+    Button(0,0,0,0,0,(char*)"",0), Button(0,0,0,0,0,(char*)"",0),
+    Button(0,0,0,0,0,(char*)"",0), Button(0,0,0,0,0,(char*)"",0),
+    Button(0,0,0,0,0,(char*)"",0), Button(0,0,0,0,0,(char*)"",0)
+};
+
+char calculator_calcul[30] = "";

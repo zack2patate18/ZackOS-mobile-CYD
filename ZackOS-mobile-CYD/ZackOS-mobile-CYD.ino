@@ -38,6 +38,8 @@ void setup() {
     }
     launch_app(lock);
     if (debug) Serial.println("Launching lock screen");
+
+    init_calculator();
 }
 
 unsigned long touchStartTime = 0;
