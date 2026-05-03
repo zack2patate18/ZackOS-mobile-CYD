@@ -46,6 +46,10 @@ void torch_handler();
 
 void draw_torch();
 
+void draw_calculator();
+
+void calculator_handler();
+
 extern App settings;
 extern App home;
 extern int current_app;
@@ -57,3 +61,4 @@ extern App lock;
 extern App keyboard;
 extern App themes;
 extern App torch;
+extern App calculator;

@@ -308,9 +308,11 @@ void draw_sleep()
     {
         TouchPoint pos = get_pos();
         uint16_t tx = 0, ty = 0;
-bool touched = tft.getTouch(&tx, &ty);
-if (touched) remap_pos(tx, ty);
-else screen_touched = false;
+        bool touched = tft.getTouch(&tx, &ty);
+        if (touched)
+            remap_pos(tx, ty);
+        else
+            screen_touched = false;
 
         if (pos.touched)
         {
@@ -705,6 +707,17 @@ void draw_torch()
 {
 }
 
+void draw_calculator()
+{
+    tft.fillScreen(color565(50, 50, 50));
+    tft.fillRect(30, 80, tft.width() - 30 * 2, 40, color565(40, 40, 40));
+    tft.setTextColor(color565(200, 200, 200), color565(40, 40, 40));
+    tft.drawCenterString("calculator", tft.width() / 2, 80, 4);
+}
+
+void calculator_handler() {
+}
+
 App settings = {
     color565(91, 91, 91), settings_handler, draw_settings, "Settings", true, false};
 
@@ -729,7 +742,10 @@ App zackpay = {
 App torch = {
     color565(0, 0, 0), torch_handler, draw_torch, "Torch", true, true};
 
-App app_list[] = {home, settings, reboot_menu, sleep_app, lock, themes, zackpay};
+App calculator = {
+    color565(200, 50, 50), calculator_handler, draw_calculator, "Calculator", true, true};
+
+App app_list[] = {home, settings, reboot_menu, sleep_app, lock, themes, zackpay, calculator};
 int app_list_size = sizeof(app_list) / sizeof(app_list[0]);
 
 void draw_home()
