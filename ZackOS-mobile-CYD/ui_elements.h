@@ -14,6 +14,7 @@ class Button {
     uint16_t outline_color;
     char* text;
 
+    Button() : x(0), y(0), width(0), height(0), color(0), text((char*)""), outline_color(0) {}
     Button(int x, int y, int width, int height, uint16_t color, char* text, uint16_t outline_color);
     void draw();
     bool collide(uint16_t pos_x, uint16_t pos_y);
