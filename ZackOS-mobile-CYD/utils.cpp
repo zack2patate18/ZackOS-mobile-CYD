@@ -99,3 +99,40 @@ bool read_bmp_dimensions(const char *filename, uint16_t &w, uint16_t &h) {
     bmpFile.close();
     return true;
 }
+
+bool file_exists(const char* path) {
+    File f = SD.open(path);
+    if (!f) return false;
+    bool is_file = !f.isDirectory();
+    f.close();
+    return is_file;
+}
+
+bool dir_exists(const char* path) {
+    File f = SD.open(path);
+    if (!f) return false;
+    bool is_dir = f.isDirectory();
+    f.close();
+    return is_dir;
+}
+
+bool write_file(const char* path, const char* content) {
+    File f = SD.open(path, FILE_WRITE);
+    if (!f) return false;
+    f.print(content);
+    f.close();
+    return true;
+}
+
+bool create_file(const char* path) {
+    if (file_exists(path)) return true;
+    File f = SD.open(path, FILE_WRITE);
+    if (!f) return false;
+    f.close();
+    return true;
+}
+
+bool create_dir(const char* path) {
+    if (dir_exists(path)) return true;
+    return SD.mkdir(path);
+}
